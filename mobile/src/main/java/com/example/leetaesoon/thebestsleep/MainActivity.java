@@ -12,8 +12,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.Switch;
@@ -30,12 +32,13 @@ public class MainActivity extends Activity implements Serializable{
     ImageButton speakerPlus;
     SeekBar volumeSeekBar;
     Intent bluetoothIntent;
-    ArrayList<PairedDevice> listData;
+    ArrayList<PairedDevice> listData;//현재 연결된 기기의 정보를 가져온다.(사용자가 등록한 주소와 비교해서 볼륨을 낮추거나 블루투스를 끄도록 하기위함)
+    ArrayList<PairedDevice> selectedDevice;//선택된 기기의 정보를 저장한다.
     ListView listView_Speaker;
     final int request_code = 111;
     Intent intent;
     ListViewAdapter listViewAdapter_Speaker;
-    String m_SelectedDevice;//현재 연결된 기기의 주소를 가져온다.(사용자가 등록한 주소와 비교해서 볼륨을 낮추거나 블루투스를 끄도록 하기위함)
+
 
 
     @Override
@@ -49,6 +52,9 @@ public class MainActivity extends Activity implements Serializable{
     private void Init() {
         listView_Speaker = (ListView)findViewById(R.id.listViewSpeaker);//장치정보 보여줄 listview
         listData = new ArrayList<PairedDevice>();//장치 정보
+        selectedDevice = new ArrayList<PairedDevice>();//선택된 장치들
+        listViewAdapter_Speaker = new ListViewAdapter(getApplicationContext(),R.layout.row,selectedDevice);
+        listView_Speaker.setAdapter(listViewAdapter_Speaker);
         Switch bluetoothSwitch = (Switch)findViewById(R.id.bluetoothSwitch);//볼륨 스위치
         m_Audio = (AudioManager)getSystemService(Context.AUDIO_SERVICE);//볼륨 조절을 위함.
         volumeSeekBar = (SeekBar)findViewById(R.id.volumeSeekbar); //볼륨 조절 바
@@ -193,13 +199,23 @@ public class MainActivity extends Activity implements Serializable{
 
 
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode==request_code && resultCode== Activity.RESULT_OK)
         {
+            PairedDevice device = (PairedDevice)data.getExtras().get("data");
+            for(PairedDevice devices : selectedDevice)
+            {
+                if(devices.getAddress().equals(device.getAddress()))
+                {
+                    Toast.makeText(getBaseContext(),"이미 선택한 장치입니다.",Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
+            }
+            selectedDevice.add(device);
+            listViewAdapter_Speaker.notifyDataSetChanged();
         }
     }
 

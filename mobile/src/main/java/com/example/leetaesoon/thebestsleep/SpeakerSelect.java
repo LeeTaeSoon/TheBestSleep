@@ -3,6 +3,8 @@ package com.example.leetaesoon.thebestsleep;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -14,6 +16,7 @@ public class SpeakerSelect extends Activity implements Serializable{
     ListView listView;
     ListAdapter listAdapter;
     ArrayList<PairedDevice> listData;
+    Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +27,7 @@ public class SpeakerSelect extends Activity implements Serializable{
     }
 
     private void Init() {
-        Intent intent = getIntent();
+        intent = getIntent();
         listData = new ArrayList<PairedDevice>();
         listData = (ArrayList<PairedDevice>)intent.getSerializableExtra("list");
 
@@ -32,5 +35,13 @@ public class SpeakerSelect extends Activity implements Serializable{
         listView = (ListView)findViewById(R.id.speakerSelect);
         listAdapter = new ListViewAdapter(getApplicationContext(),R.layout.row,listData);
         listView.setAdapter(listAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                intent.putExtra("data",listData.get(i));
+                setResult(RESULT_OK,intent);
+                finish();
+            }
+        });
     }
 }
