@@ -20,7 +20,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SpeakerSelect"></activity>
+        <activity android:name=".SpeakerSelect" />
+        <activity android:name=".BluetoothSpeaker"></activity>
     </application>
 
 </manifest>
