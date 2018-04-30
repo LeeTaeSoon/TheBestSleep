@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -20,10 +19,11 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Set;
 
-public class BluetoothSpeaker extends AppCompatActivity {
+public class BluetoothSpeaker extends  Activity implements Serializable {
     BluetoothAdapter m_BtAdapter;// onCreate에서 정의함.(bluetooth 송수신 장치)
     BluetoothA2dp m_A2dpService; // m_A2dpListener에서 정의함.(블루투스를 통한 오디오 스트리밍 방법 정의)
     AudioManager m_Audio;
@@ -41,6 +41,7 @@ public class BluetoothSpeaker extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth_speaker);
+        Init();
     }
 
     private void Init() {
@@ -117,7 +118,7 @@ public class BluetoothSpeaker extends AppCompatActivity {
 
                     }
                 }
-                intent = new Intent(MainActivity.this,SpeakerSelect.class);
+                intent = new Intent(BluetoothSpeaker.this,SpeakerSelect.class);
                 intent.putExtra("list",listData);
 
                 startActivityForResult(intent,request_code);
