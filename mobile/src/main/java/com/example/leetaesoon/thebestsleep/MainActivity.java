@@ -26,7 +26,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends Activity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

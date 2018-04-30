@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -13,8 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
-
+        <activity android:name=".SmartPlug">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -22,7 +22,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".SpeakerSelect" />
-        <activity android:name=".BluetoothSpeaker"></activity>
+        <activity android:name=".BluetoothSpeaker" />
+        <activity android:name=".MainActivity"></activity>
     </application>
 
 </manifest>
