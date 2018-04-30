@@ -117,7 +117,7 @@ public class BluetoothSpeaker extends AppCompatActivity {
 
                     }
                 }
-                intent = new Intent(MainActivity.this,SpeakerSelect.class);
+                intent = new Intent(BluetoothSpeaker.this,SpeakerSelect.class);
                 intent.putExtra("list",listData);
 
                 startActivityForResult(intent,request_code);
