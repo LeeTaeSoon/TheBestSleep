@@ -5,6 +5,64 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.example.leetaesoon.thebestsleep.MainActivity">
+    tools:context="com.example.leetaesoon.thebestsleep.MainActivity"
+    android:background="#00000000">
+    <Button
+        android:id="@+id/lamp_btn"
+        android:text="Smart Lamp"
+        android:textColor="#FFFFFF"
+        android:textSize="30sp"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/btnshape_lamp"
+        android:shadowColor="#209FA8"
+        android:shadowDx="-9"
+        android:shadowDy="9"
+        android:shadowRadius="25"
+        />
 
+    <Button
+        android:id="@+id/speaker_btn"
+        android:text="Smart Speaker"
+        android:textColor="#FFFFFF"
+        android:textSize="30sp"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/btnshape_speaker"
+        android:shadowColor="#4FA8A8"
+        android:shadowDx="-9"
+        android:shadowDy="9"
+        android:shadowRadius="25"
+        />
+    <Button
+        android:id="@+id/plug_btn"
+        android:text="Smart Plug"
+        android:textColor="#FFFFFF"
+        android:textSize="30sp"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/btnshape_plug"
+        android:shadowColor="#5BA877"
+        android:shadowDx="-9"
+        android:shadowDy="9"
+        android:shadowRadius="25"
+        />
+
+    <Button
+        android:id="@+id/log_btn"
+        android:text="Sleep Record"
+        android:textColor="#FFFFFF"
+        android:textSize="30sp"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/btnshape_log"
+        android:shadowColor="#C9C944"
+        android:shadowDx="-9"
+        android:shadowDy="9"
+        android:shadowRadius="25"
+        />
 </LinearLayout>
