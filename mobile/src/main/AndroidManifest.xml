@@ -13,7 +13,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity" android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity android:name=".SpeakerSelect" />
         <activity android:name=".BluetoothSpeaker" />
         <activity
@@ -25,7 +27,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SmartLamp"></activity>
+        <activity android:name=".LampSelect" />
+        <activity android:name=".plugSignIn" />
+        <activity android:name=".sleepRecord"></activity>
     </application>
 
 </manifest>

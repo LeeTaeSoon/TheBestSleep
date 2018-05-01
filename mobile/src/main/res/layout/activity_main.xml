@@ -20,6 +20,7 @@
         android:shadowDx="-9"
         android:shadowDy="9"
         android:shadowRadius="25"
+        android:onClick="LampSetting"
         />
 
     <Button
@@ -35,6 +36,7 @@
         android:shadowDx="-9"
         android:shadowDy="9"
         android:shadowRadius="25"
+        android:onClick="speakerSetting"
         />
     <Button
         android:id="@+id/plug_btn"
@@ -49,6 +51,7 @@
         android:shadowDx="-9"
         android:shadowDy="9"
         android:shadowRadius="25"
+        android:onClick="plugSetting"
         />
 
     <Button
@@ -64,5 +67,6 @@
         android:shadowDx="-9"
         android:shadowDy="9"
         android:shadowRadius="25"
+        android:onClick="logShow"
         />
 </LinearLayout>

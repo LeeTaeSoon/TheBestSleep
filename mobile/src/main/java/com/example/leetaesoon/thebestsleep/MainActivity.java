@@ -27,10 +27,30 @@ import java.util.ArrayList;
 import java.util.Set;
 
 public class MainActivity extends Activity{
-
+    Intent intent;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
+
+    public void logShow(View view) {
+        intent = new Intent(MainActivity.this, sleepRecord.class);
+        startActivity(intent);
+    }
+
+    public void plugSetting(View view) {
+        intent = new Intent(MainActivity.this, plugSignIn.class);
+        startActivity(intent);
+    }
+
+    public void speakerSetting(View view) {
+        intent = new Intent(MainActivity.this, SpeakerSelect.class);
+        startActivity(intent);
+    }
+
+    public void LampSetting(View view) {
+        intent = new Intent(MainActivity.this, LampSelect.class);
+        startActivity(intent);
     }
 }
