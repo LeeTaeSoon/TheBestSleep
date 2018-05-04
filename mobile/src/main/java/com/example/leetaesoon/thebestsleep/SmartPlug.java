@@ -13,6 +13,7 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -29,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -49,87 +51,6 @@ public class SmartPlug extends Activity {
         MainPageTask mainPageTask = new MainPageTask();
         mainPageTask.execute();//메인에서 네트워크 연결시 오류가 난다. 따라서 백그라운드로 웹페이지에서 uuid를 가져왔다.
 
-    }
-
-    private int getToken()  {
-        try {
-            URL url = new URL("https://wap.tplinkcloud.com");
-
-            JSONObject jsonObject1 = new JSONObject();
-            jsonObject1.accumulate("appType", "Kasa_Android");
-            jsonObject1.accumulate("cloudPassword", "1q2w3e4r"); //사용자가 입력한 값으로 받자.
-            jsonObject1.accumulate("cloudUserName", "xxxxx@naver.com");//사용자가 입력한 값으로 받아오기.
-            jsonObject1.accumulate("terminalUUID", uuid);
-
-            JSONObject jsonObject2 = new JSONObject();
-            jsonObject2.accumulate("method", "login");
-            jsonObject2.accumulate("params", jsonObject1);
-
-            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");//POST message
-            connection.setRequestProperty("Content-type", "application/json");
-            connection.setDoOutput(true);
-            connection.setDoInput(true);
-
-
-            OutputStream outputStream = connection.getOutputStream();
-            outputStream.write(jsonObject2.toString().getBytes());
-            outputStream.flush();
-
-            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)//값을 잘 받았을 때.
-            {
-                InputStream inputStream = connection.getInputStream();
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                byte[] byteBuffer = new byte[1024];
-                byte[] byteData = null;
-                int nLength = 0;
-                while((nLength = inputStream.read(byteBuffer, 0, byteBuffer.length)) != -1) {
-                    byteArrayOutputStream.write(byteBuffer, 0, nLength);
-                }
-                byteData = byteArrayOutputStream.toByteArray();
-                String response = new String(byteData);
-
-                final JSONObject responseJSON = new JSONObject(response);
-                Log.d("uuid","json :" +responseJSON.toString());
-
-                if((int)responseJSON.get("error_code") != 0)//비밀번호가 틀렸거나 아이디가 틀림. -> alert로 메세지를 띄우고 스레드 종료.
-                {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            AlertDialog.Builder alert = new AlertDialog.Builder(SmartPlug.this);
-                            alert.setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    dialogInterface.dismiss();
-
-                                }
-                            });
-
-                            try {
-                                alert.setMessage(responseJSON.get("msg").toString());
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            alert.show();
-                        }
-                    });
-                }
-
-                else{
-                    JSONObject responseJSON2 = new JSONObject(responseJSON.get("result").toString());
-                    token = (String)responseJSON2.get("token");
-                    Log.d("uuid","token : "+token);
-                }
-                return (int)responseJSON.get("error_code");
-            }
-
-        }
-        catch (MalformedURLException e) { e.printStackTrace();}
-        catch (IOException e) {e.printStackTrace();}
-        catch (JSONException e) {e.printStackTrace();}
-
-        return -1;
     }
 
 
@@ -160,6 +81,7 @@ public class SmartPlug extends Activity {
                  if(getToken() !=0) return null;// 아이디, 비밀번호중 하나가 틀렸을 경우 즉, Token을 못받아왔으면 쓰레드를 종료한다.
                  Log.d("uuid","fail");
 
+                 getDeviceList();//사용자가 입력한 계정에 등록된 장치의 URL, ID, Alias(사용자가 정한 디바이스의 이름)를
              }
 
              catch (IOException e) {
@@ -167,6 +89,144 @@ public class SmartPlug extends Activity {
              }
              return null;
         }
+
+        private void getDeviceList() {
+            try {
+                URL url = new URL("https://wap.tplinkcloud.com?token="+token);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.accumulate("method", "getDeviceList");
+
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");//POST message
+                connection.setRequestProperty("Content-type", "application/json");
+                connection.setDoOutput(true);
+                connection.setDoInput(true);
+
+
+                OutputStream outputStream = connection.getOutputStream();
+                outputStream.write(jsonObject.toString().getBytes());
+                outputStream.flush();
+
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)//값을 잘 받았을 때.
+                {
+                    InputStream inputStream = connection.getInputStream();
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    byte[] byteBuffer = new byte[1024];
+                    byte[] byteData = null;
+                    int nLength = 0;
+                    while ((nLength = inputStream.read(byteBuffer, 0, byteBuffer.length)) != -1) {
+                        byteArrayOutputStream.write(byteBuffer, 0, nLength);
+                    }
+                    byteData = byteArrayOutputStream.toByteArray();
+                    String response = new String(byteData);
+
+                    JSONObject responseJSON1 = new JSONObject(response);
+
+                    if((int)responseJSON1.get("error_code") == 0)
+                    {
+                        JSONObject resposneJSON2 = new JSONObject(responseJSON1.get("deviceList").toString());
+                        JSONArray jsonArray = new JSONArray(resposneJSON2);
+                        //여기 부터 해야함/
+                    }
+
+                }
+
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (ProtocolException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
+
+        private int getToken()  {
+            try {
+                URL url = new URL("https://wap.tplinkcloud.com");
+
+                JSONObject jsonObject1 = new JSONObject();
+                jsonObject1.accumulate("appType", "Kasa_Android");
+                jsonObject1.accumulate("cloudPassword", "1q2w3e4r"); //사용자가 입력한 값으로 받자.
+                jsonObject1.accumulate("cloudUserName", "xxxxx@naver.com");//사용자가 입력한 값으로 받아오기.
+                jsonObject1.accumulate("terminalUUID", uuid);
+
+                JSONObject jsonObject2 = new JSONObject();
+                jsonObject2.accumulate("method", "login");
+                jsonObject2.accumulate("params", jsonObject1);
+
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");//POST message
+                connection.setRequestProperty("Content-type", "application/json");
+                connection.setDoOutput(true);
+                connection.setDoInput(true);
+
+
+                OutputStream outputStream = connection.getOutputStream();
+                outputStream.write(jsonObject2.toString().getBytes());
+                outputStream.flush();
+
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)//값을 잘 받았을 때.
+                {
+                    InputStream inputStream = connection.getInputStream();
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    byte[] byteBuffer = new byte[1024];
+                    byte[] byteData = null;
+                    int nLength = 0;
+                    while((nLength = inputStream.read(byteBuffer, 0, byteBuffer.length)) != -1) {
+                        byteArrayOutputStream.write(byteBuffer, 0, nLength);
+                    }
+                    byteData = byteArrayOutputStream.toByteArray();
+                    String response = new String(byteData);
+
+                    final JSONObject responseJSON = new JSONObject(response);
+                    Log.d("uuid","json :" +responseJSON.toString());
+
+                    if((int)responseJSON.get("error_code") != 0)//비밀번호가 틀렸거나 아이디가 틀림. -> alert로 메세지를 띄우고 스레드 종료.
+                    {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                AlertDialog.Builder alert = new AlertDialog.Builder(SmartPlug.this);
+                                alert.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+
+                                    }
+                                });
+
+                                try {
+                                    alert.setMessage(responseJSON.get("msg").toString());
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                                alert.show();
+                            }
+                        });
+                    }
+
+                    else{
+                        JSONObject responseJSON2 = new JSONObject(responseJSON.get("result").toString());
+                        token = (String)responseJSON2.get("token");
+                        Log.d("uuid","token : "+token);
+                    }
+                    return (int)responseJSON.get("error_code");
+                }
+
+            }
+            catch (MalformedURLException e) { e.printStackTrace();}
+            catch (IOException e) {e.printStackTrace();}
+            catch (JSONException e) {e.printStackTrace();}
+
+            return -1;
+        }
+
     }
 
 }
