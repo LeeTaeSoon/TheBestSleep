@@ -14,16 +14,33 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+<<<<<<< HEAD
         <activity android:name=".SmartPlug">
+=======
+        <activity
+            android:name=".MainActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity android:name=".SpeakerSelect" />
+        <activity android:name=".BluetoothSpeaker" />
+        <activity
+            android:name=".SplashActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
+>>>>>>> master
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+<<<<<<< HEAD
         <activity android:name=".SpeakerSelect" />
         <activity android:name=".BluetoothSpeaker" />
         <activity android:name=".MainActivity"></activity>
+=======
+        <activity android:name=".LampSelect" />
+        <activity android:name=".plugSignIn" />
+        <activity android:name=".sleepRecord"></activity>
+>>>>>>> master
     </application>
 
 </manifest>

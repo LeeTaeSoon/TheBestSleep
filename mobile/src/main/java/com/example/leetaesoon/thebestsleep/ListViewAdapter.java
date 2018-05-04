@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by hyun on 2018-03-25.
  */
-
+//블루투스 스피커용 리스트 뷰
 public class ListViewAdapter extends ArrayAdapter<PairedDevice> {
 
     Context m_context;
