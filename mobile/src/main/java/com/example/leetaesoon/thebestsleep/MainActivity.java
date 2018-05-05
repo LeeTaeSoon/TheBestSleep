@@ -27,11 +27,9 @@ import java.util.ArrayList;
 import java.util.Set;
 
 public class MainActivity extends Activity{
-<<<<<<< HEAD
 
-=======
     Intent intent;
->>>>>>> master
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
