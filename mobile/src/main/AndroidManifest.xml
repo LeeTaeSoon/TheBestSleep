@@ -7,6 +7,11 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- To auto-complete the email text field in the login form with the user's emails -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_PROFILE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -37,9 +42,11 @@
             <!--</intent-filter>-->
         </activity>
 
-        <activity android:name=".LampSelect" />
-        <activity android:name=".plugSignIn" />
-        <activity android:name=".sleepRecord"></activity>
+        <activity android:name=".LampSelect" android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:name=".plugSignIn" android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:name=".sleepRecord" android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:name=".PlugList" android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
+
     </application>
 
 </manifest>
