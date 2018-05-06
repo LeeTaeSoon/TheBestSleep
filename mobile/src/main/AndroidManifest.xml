@@ -32,10 +32,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LampSelect" />
-        <activity android:name=".plugSignIn" />
-        <activity android:name=".sleepRecord" />
-        <activity android:name=".PlugList"></activity>
+        <activity android:name=".LampSelect" android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:name=".plugSignIn" android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:name=".sleepRecord" android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:name=".PlugList" android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
     </application>
 
 </manifest>
