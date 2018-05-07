@@ -55,6 +55,8 @@ public class plugSignIn extends Activity{
             Intent i = new Intent(plugSignIn.this, PlugList.class);
             i.putExtra("email",user_email);
             i.putExtra("password",user_pass);
+            mEmail.setText("");
+            mPassword.setText("");
             startActivity(i);
         }
     }
