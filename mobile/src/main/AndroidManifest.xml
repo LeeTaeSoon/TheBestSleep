@@ -32,10 +32,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LampSelect" android:theme="@style/Theme.AppCompat.NoActionBar"/>
-        <activity android:name=".plugSignIn" android:theme="@style/Theme.AppCompat.NoActionBar"/>
-        <activity android:name=".sleepRecord" android:theme="@style/Theme.AppCompat.NoActionBar"/>
-        <activity android:name=".PlugList" android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
+        <activity
+            android:name=".LampSelect"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".plugSignIn"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".sleepRecord"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".PlugList"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity android:name=".LampColorSetting"
+            android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
         <service android:name=".MessageListener" >
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
@@ -45,6 +55,7 @@
                 <data android:scheme="wear" android:host="*" />
             </intent-filter>
         </service>
+
     </application>
 
 </manifest>
