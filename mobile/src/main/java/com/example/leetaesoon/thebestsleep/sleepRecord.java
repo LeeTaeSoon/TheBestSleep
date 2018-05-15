@@ -17,6 +17,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class sleepRecord extends Activity {
 
@@ -28,15 +29,14 @@ public class sleepRecord extends Activity {
         setContentView(R.layout.activity_sleep_record);
 
         lineChart = (LineChart)findViewById(R.id.chart1);
-
+        Random random = new Random();
         List<Entry> entries = new ArrayList<>();
-        entries.add(new Entry(1, 1));
-        entries.add(new Entry(2, 2));
-        entries.add(new Entry(3, 0));
-        entries.add(new Entry(4, 4));
-        entries.add(new Entry(5, 3));
+        for(int i = 0; i<20; i++){
+            float num = random.nextFloat()*100;
+            entries.add(new Entry(i,num));
+        }
 
-        LineDataSet lineDataSet = new LineDataSet(entries, "속성명1");
+        LineDataSet lineDataSet = new LineDataSet(entries, "시간");
         lineDataSet.setLineWidth(2);
         lineDataSet.setCircleRadius(6);
         lineDataSet.setCircleColor(Color.parseColor("#FFA1B4DC"));
@@ -44,6 +44,7 @@ public class sleepRecord extends Activity {
         lineDataSet.setColor(Color.parseColor("#FFA1B4DC"));
         lineDataSet.setDrawCircleHole(true);
         lineDataSet.setDrawCircles(true);
+        lineDataSet.setDrawFilled(true);
         lineDataSet.setDrawHorizontalHighlightIndicator(false);
         lineDataSet.setDrawHighlightIndicators(false);
         lineDataSet.setDrawValues(false);
@@ -54,7 +55,7 @@ public class sleepRecord extends Activity {
         XAxis xAxis = lineChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setTextColor(Color.RED);
-        xAxis.enableGridDashedLine(8, 24, 0);
+        xAxis.enableGridDashedLine(8, 48, 0);
 
         YAxis yLAxis = lineChart.getAxisLeft();
         yLAxis.setTextColor(Color.RED);
