@@ -11,6 +11,15 @@
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
+    <string name="title_error">Error</string>
+    <string name="press_pushlink_button">Press the link button on the bridge</string>
+    <string name="txt_select_smartbridge">Please select a bridge to use for this app</string>
+    <string name="txt_pushlink">Pushlink</string>
+    <string name="btn_ok">Ok</string>
+    <string name="connecting">Connecting ...</string>
+    <string name="search_progress">Searching ...</string>
+    <string name="menu_refresh">Refresh</string>
+    <string name="menu_find_bridge">Find new Bridge</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>

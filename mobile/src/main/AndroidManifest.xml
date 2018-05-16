@@ -19,14 +19,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity android:name=".SmartPlug">
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-        </activity>
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
 
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        </activity>
         <activity
             android:name=".MainActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
@@ -36,17 +35,32 @@
             android:name=".SplashActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar">
 
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
+        <activity
+            android:name=".LampSelect"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".plugSignIn"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".sleepRecord"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".PlugList"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity android:name=".SmartLight">
+        </activity>
+        <activity android:name=".PHHomeActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-        <activity android:name=".LampSelect" android:theme="@style/Theme.AppCompat.NoActionBar"/>
-        <activity android:name=".plugSignIn" android:theme="@style/Theme.AppCompat.NoActionBar"/>
-        <activity android:name=".sleepRecord" android:theme="@style/Theme.AppCompat.NoActionBar"/>
-        <activity android:name=".PlugList" android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
-
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
