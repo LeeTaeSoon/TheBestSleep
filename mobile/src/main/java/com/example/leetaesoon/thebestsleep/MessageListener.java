@@ -11,11 +11,13 @@ public class MessageListener extends WearableListenerService {
     @Override
     public void onMessageReceived(final MessageEvent messageEvent) {
         String data = new String(messageEvent.getData());
-        showToast(data);
-        Log.d("MessageListener", "message : " + data);
+        //showToast(data);
+        ExternalStorageHandler externalStorageHandler = new ExternalStorageHandler();
+        externalStorageHandler.writeFile(data + "\n");
+        //Log.d("MessageListener", "message : " + data);
         super.onMessageReceived(messageEvent);
 
-        Looper.loop();
+        //Looper.loop();
     }
 
     private void showToast(String message) {

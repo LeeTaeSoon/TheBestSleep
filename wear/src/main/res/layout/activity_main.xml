@@ -1,18 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.wear.widget.drawer.WearableDrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.wear.widget.BoxInsetLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/dark_grey"
+    android:padding="@dimen/box_inset_layout_padding"
     tools:context="com.example.leetaesoon.thebestsleep.MainActivity"
     tools:deviceIds="wear">
 
-    <TextView
-        android:id="@+id/text"
-        android:gravity="center"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-</android.support.wear.widget.drawer.WearableDrawerLayout>
+        android:layout_height="match_parent"
+        android:padding="@dimen/inner_frame_layout_padding"
+        app:boxedEdges="all">
+
+        <LinearLayout
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <TextView
+                android:text="서비스 사용"
+                android:textSize="14dp"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"/>
+
+            <ImageButton
+                android:id="@+id/button"
+                android:scaleType="fitXY"
+                android:layout_width="256px"
+                android:layout_height="256px"
+                android:padding="0dp"/>
+        </LinearLayout>
+    </FrameLayout>
+</android.support.wear.widget.BoxInsetLayout>
 
