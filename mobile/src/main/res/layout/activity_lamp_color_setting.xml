@@ -8,21 +8,68 @@
     android:orientation="vertical">
     <com.larswerkman.holocolorpicker.ColorPicker
         android:id="@+id/picker"
-        android:layout_margin="10dp"
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginVertical="40dp"
         android:layout_gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        app:color_pointer_radius="0dp"
+        app:color_pointer_halo_radius="0dp"
+        app:color_wheel_thickness="1dp"
+        app:color_center_halo_radius="0dp"
+        app:color_center_radius="80dp"/>
 
     <TextView
-        android:layout_marginHorizontal="10dp"
+        android:layout_marginHorizontal="25dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="채도" />
+        android:text="R" />
 
-    <com.larswerkman.holocolorpicker.SaturationBar
+    <SeekBar
         android:layout_marginHorizontal="10dp"
-        android:id="@+id/saturationbar"
+        android:layout_marginBottom="15dp"
+        android:id="@+id/red_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:max="255"
+        android:progress="128"
+        android:thumb="@drawable/seekbar_thumb"
+        android:progressDrawable="@drawable/seekbar_line"/>
+
+    <TextView
+        android:layout_marginHorizontal="25dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="G" />
+
+    <SeekBar
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginBottom="15dp"
+        android:id="@+id/green_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="255"
+        android:progress="128"
+        android:thumb="@drawable/seekbar_thumb"
+        android:progressDrawable="@drawable/seekbar_line"/>
+
+    <TextView
+        android:layout_marginHorizontal="25dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="B" />
+
+    <SeekBar
+        android:layout_marginHorizontal="10dp"
+        android:layout_marginBottom="15dp"
+        android:id="@+id/blue_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="255"
+        android:progress="128"
+        android:thumb="@drawable/seekbar_thumb"
+        android:progressDrawable="@drawable/seekbar_line"/>
+
 
 </LinearLayout>

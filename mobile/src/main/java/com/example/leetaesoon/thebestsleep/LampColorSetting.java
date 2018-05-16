@@ -5,14 +5,17 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.SaturationBar;
 
-public class LampColorSetting extends Activity {
+public class LampColorSetting extends Activity implements SeekBar.OnSeekBarChangeListener {
     ColorPicker colorPicker;
-    SaturationBar saturationBar;
+    SeekBar seekRed;
+    SeekBar seekGreen;
+    SeekBar seekBlue;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,34 +25,48 @@ public class LampColorSetting extends Activity {
     public void init(){
         final float[] hsv_value = new float[3];
         colorPicker = (ColorPicker)findViewById(R.id.picker);
-        saturationBar = (SaturationBar)findViewById(R.id.saturationbar);
-        colorPicker.addSaturationBar(saturationBar);
+        seekRed = (SeekBar)findViewById(R.id.red_bar);
+        seekGreen = (SeekBar)findViewById(R.id.green_bar);
+        seekBlue = (SeekBar)findViewById(R.id.blue_bar);
 
-        colorPicker.setOnColorChangedListener(new ColorPicker.OnColorChangedListener() {
-            @Override
-            public void onColorChanged(int color) {
-                colorPicker.setOldCenterColor(color);
-                String c = Integer.toHexString(color);
-                Log.v("Toast_sat",""+c);
-            }
-        });
+        colorPicker.setTouchAnywhereOnColorWheelEnabled(false);
+        colorPicker.setClickable(false);
 
-        colorPicker.setOnColorSelectedListener(new ColorPicker.OnColorSelectedListener() {
-            @Override
-            public void onColorSelected(int color) {
-                colorPicker.setOldCenterColor(color);
-                String c = Integer.toHexString(color);
-                Log.v("Toast_sat",""+c);
-            }
-        });
-        saturationBar.setOnSaturationChangedListener(new SaturationBar.OnSaturationChangedListener() {
-            @Override
-            public void onSaturationChanged(int saturation) {
-                //colorPicker.setOldCenterColor(saturation);
-               colorPicker.setNewCenterColor(saturation);
-               String c = Integer.toHexString(saturation);
-               Log.v("Toast_sat",""+c);
-            }
-        });
+        seekRed.setOnSeekBarChangeListener(this);
+        seekGreen.setOnSeekBarChangeListener(this);
+        seekBlue.setOnSeekBarChangeListener(this);
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        int A;
+        int R=seekRed.getProgress();
+        int G=seekGreen.getProgress();
+        int B=seekBlue.getProgress();
+        //Reference the value changing
+        int id=seekBar.getId();
+        //Get the chnaged value
+        if(id == com.example.leetaesoon.thebestsleep.R.id.red_bar)
+            R=progress;
+        else if(id == com.example.leetaesoon.thebestsleep.R.id.green_bar)
+            G=progress;
+        else if(id == com.example.leetaesoon.thebestsleep.R.id.blue_bar)
+            B=progress;
+        //Build and show the new color
+        //some math so text shows (needs improvement for greys)
+        colorPicker.setNewCenterColor(Color.argb(0xff,R,G,B));
+        colorPicker.setOldCenterColor(Color.argb(0xff,R,G,B));
+
+        //R,G,B를 가지고 명령어 보내면 됨
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
     }
 }
