@@ -8,20 +8,10 @@
     android:background="@color/dark_grey"
     tools:context="com.example.leetaesoon.thebestsleep.MainActivity"
     tools:deviceIds="wear">
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="@dimen/inner_frame_layout_padding">
 
-        <android.support.wear.widget.WearableRecyclerView
-            android:id="@+id/deviceList"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars = "vertical" />
-    </FrameLayout>
-
-    <android.support.wear.widget.drawer.WearableNavigationDrawerView
-        android:id="@+id/top_navigation_drawer"
+    <TextView
+        android:id="@+id/text"
+        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 </android.support.wear.widget.drawer.WearableDrawerLayout>

@@ -1,141 +1,119 @@
 package com.example.leetaesoon.thebestsleep;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
-import android.support.wear.widget.WearableLinearLayoutManager;
-import android.support.wear.widget.WearableRecyclerView;
-import android.support.wear.widget.drawer.WearableNavigationDrawerView;
+import android.support.annotation.NonNull;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 
-public class MainActivity extends WearableActivity implements WearableNavigationDrawerView.OnItemSelectedListener {
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.android.gms.wearable.CapabilityClient;
+import com.google.android.gms.wearable.CapabilityInfo;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+public class MainActivity extends WearableActivity implements CapabilityClient.OnCapabilityChangedListener {
 
     private static final String TAG = "MainActivity";
+    private static final String BODY_SENSOR_CAPABILITY_NAME = "body_sensor";
+    public static final String BODY_SENSOR_MESSAGE_PATH = "/body_sensor";
+    private int CONNECTION_TIME_OUT_MS = 2000;
+    private String nodeId;
 
-    private WearableNavigationDrawerView mWearableNavigationDrawer;
-    private WearableRecyclerView mWearableRecyclerView;
-    private CustomRecyclerAdapter mCustomRecyclerAdapter;
+    TextView mTextView;
 
-    Device[] devices = {
-            new Device("light", "조명", ""),
-            new Device("speaker", "스피커", ""),
-            new Device("plug", "플러그", "")
-    };
+    private void setupVoiceTranscription() throws ExecutionException, InterruptedException {
+        Log.d(TAG, "enter setupVoiceTranscription");
+        CapabilityInfo capabilityInfo = Tasks.await(
+                Wearable.getCapabilityClient(this).getCapability(
+                        BODY_SENSOR_CAPABILITY_NAME, CapabilityClient.FILTER_REACHABLE));
+        // capabilityInfo has the reachable nodes with the transcription capability
+        updateTranscriptionCapability(capabilityInfo);
 
-    Device[] lights = {
-            new Device("light", "조명1", ""),
-            new Device("light", "조명2", ""),
-            new Device("light", "조명3", "")
-    };
+        Wearable.getCapabilityClient(this).addListener(this, BODY_SENSOR_CAPABILITY_NAME);
+        Log.d(TAG, "exit setupVoiceTranscription");
+    }
 
-    Device[] speakers = {
-            new Device("speaker", "스피커1", ""),
-            new Device("speaker", "스피커2", ""),
-            new Device("speaker", "스피커3", "")
-    };
+    @Override
+    public void onCapabilityChanged(@NonNull CapabilityInfo capabilityInfo) {
+        Log.d(TAG, "enter onCapabilityChanged");
+        updateTranscriptionCapability(capabilityInfo);
+        Log.d(TAG, "exit onCapabilityChanged");
+    }
 
-    Device[] plugs = {
-            new Device("plug", "플러그1", ""),
-            new Device("plug", "플러그2", ""),
-            new Device("plug", "플러그3", "")
-    };
+    private void updateTranscriptionCapability(CapabilityInfo capabilityInfo) {
+        Log.d(TAG, "enter updateTranscriptionCapability");
+        Set<Node> connectedNodes = capabilityInfo.getNodes();
 
-    int mSelectedDevice;
+        nodeId = pickBestNodeId(connectedNodes);
+        Log.d(TAG, "picked nodeid : " + nodeId);
+        Log.d(TAG, "exit updateTranscriptionCapability");
+    }
+
+    private String pickBestNodeId(Set<Node> nodes) {
+        String bestNodeId = null;
+        // Find a nearby node or pick one arbitrarily
+        for (Node node : nodes) {
+            if (node.isNearby()) {
+                return node.getId();
+            }
+            bestNodeId = node.getId();
+        }
+        return bestNodeId;
+    }
+
+    private void requestTranscription(byte[] sensorData) {
+        Log.d(TAG, "enter requestTranscription");
+        if (nodeId != null) {
+            Task<Integer> sendTask =
+                    Wearable.getMessageClient(this).sendMessage(nodeId, BODY_SENSOR_MESSAGE_PATH, sensorData);
+            // You can add success and/or failure listeners,
+            // Or you can call Tasks.await() and catch ExecutionException
+            //sendTask.addOnSuccessListener(...);
+            //sendTask.addOnFailureListener(...);
+
+            Log.d(TAG, "sendTask : " + sendTask.toString());
+        } else {
+            // Unable to retrieve node with transcription capability
+            Log.d(TAG, "Unable to retrieve node with transcription capability");
+        }
+        Log.d(TAG, "exit requestTranscription");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mWearableRecyclerView = (WearableRecyclerView) findViewById(R.id.deviceList);
-        mWearableRecyclerView.setEdgeItemsCenteringEnabled(true);
-        mWearableRecyclerView.setLayoutManager(new WearableLinearLayoutManager(this, new CustomScrollingLayoutCallback()));
-        mWearableRecyclerView.setCircularScrollingGestureEnabled(true);
-        mWearableRecyclerView.setBezelFraction(0.5f);
-        mWearableRecyclerView.setScrollDegreesPerScreen(90);
+        mTextView = findViewById(R.id.text);
+        mTextView.setText("hello");
 
-        mSelectedDevice = 0;
-        mCustomRecyclerAdapter = new CustomRecyclerAdapter(this, lights);
+        final String data = "string data";
 
-        mWearableRecyclerView.setAdapter(mCustomRecyclerAdapter);
-
-        // Top Navigation Drawer
-        mWearableNavigationDrawer = (WearableNavigationDrawerView) findViewById(R.id.top_navigation_drawer);
-        mWearableNavigationDrawer.setAdapter(new NavigationAdapter(this));
-        // Peeks navigation drawer on the top.
-        mWearableNavigationDrawer.getController().peekDrawer();
-        mWearableNavigationDrawer.addOnItemSelectedListener(this);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    setupVoiceTranscription();
+                    requestTranscription(data.getBytes());
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
 
         // Enables Always-on
         setAmbientEnabled();
-    }
-
-    @Override
-    public void onItemSelected(int pos) {
-        Log.d(TAG, "WearableNavigationDrawerView triggered onItemSelected(): " + pos);
-        mSelectedDevice = pos;
-
-        Device[] selectedDevices;
-        if (pos == 0) selectedDevices = lights;
-        else if (pos == 1) selectedDevices = speakers;
-        else selectedDevices = plugs;
-
-        mCustomRecyclerAdapter = new CustomRecyclerAdapter(this, selectedDevices);
-        mWearableRecyclerView.setAdapter(mCustomRecyclerAdapter);
-    }
-
-    private final class NavigationAdapter extends WearableNavigationDrawerView.WearableNavigationDrawerAdapter {
-
-        private final Context mContext;
-
-        public NavigationAdapter(Context context) {
-            mContext = context;
-        }
-
-        @Override
-        public int getCount() {
-            return devices.length;
-        }
-
-        @Override
-        public String getItemText(int pos) {
-            return devices[pos].getName();
-        }
-
-        @Override
-        public Drawable getItemDrawable(int pos) {
-            String navigationIcon = devices[pos].getImg();
-
-            int drawableNavigationIconId = getResources().getIdentifier(navigationIcon, "drawable", getPackageName());
-
-            return mContext.getDrawable(drawableNavigationIconId);
-        }
-    }
-}
-
-class CustomScrollingLayoutCallback extends WearableLinearLayoutManager.LayoutCallback {
-    /** How much should we scale the icon at most. */
-    private static final float MAX_ICON_PROGRESS = 0.65f;
-
-    private float mProgressToCenter;
-
-    @Override
-    public void onLayoutFinished(View child, RecyclerView parent) {
-
-        // Figure out % progress from top to bottom
-        float centerOffset = ((float) child.getHeight() / 2.0f) / (float) parent.getHeight();
-        float yRelativeToCenterOffset = (child.getY() / parent.getHeight()) + centerOffset;
-
-        // Normalize for center
-        mProgressToCenter = Math.abs(0.5f - yRelativeToCenterOffset);
-        // Adjust to the maximum scale
-        mProgressToCenter = Math.min(mProgressToCenter, MAX_ICON_PROGRESS);
-
-        child.setScaleX(1 - mProgressToCenter);
-        child.setScaleY(1 - mProgressToCenter);
     }
 }
