@@ -10,7 +10,12 @@ public class PairedDevice implements Serializable {
     private String m_name;
     private String m_address;
 
-    public PairedDevice(String name, String address)
+    public PairedDevice()
+    {
+
+    }
+
+    public PairedDevice(String address, String name)
     {
         this.m_name = name;
         this.m_address = address;
@@ -23,4 +28,6 @@ public class PairedDevice implements Serializable {
     {
         return this.m_address;
     }
+    public void setName(String name){m_name = name;}
+    public void setAddress(String address){m_address = address;}
 }

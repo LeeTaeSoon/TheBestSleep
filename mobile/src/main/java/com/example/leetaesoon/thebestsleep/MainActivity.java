@@ -29,11 +29,12 @@ import java.util.Set;
 public class MainActivity extends Activity{
 
     Intent intent;
-
+    public static DBHandler dbHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        dbHandler = new DBHandler(this,DBHandler.DATABASE_NAME,null,1);
     }
 
     public void logShow(View view) {
@@ -47,7 +48,8 @@ public class MainActivity extends Activity{
     }
 
     public void speakerSetting(View view) {
-        intent = new Intent(MainActivity.this, SpeakerSelect.class);
+        intent = new Intent(MainActivity.this, BluetoothSpeaker.class);
+//        intent.putExtra("DB", dbHandler);
         startActivity(intent);
     }
 
@@ -56,3 +58,4 @@ public class MainActivity extends Activity{
         startActivity(intent);
     }
 }
+////

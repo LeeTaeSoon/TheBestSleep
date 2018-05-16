@@ -36,11 +36,14 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
     final int request_code = 111;
     Intent intent;
     ListViewAdapter listViewAdapter_Speaker;
-
+    DBHandler dbHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth_speaker);
+        Intent intentMain = getIntent();
+//        dbHandler = (DBHandler) intentMain.getSerializableExtra("DB");
+        dbHandler = MainActivity.dbHandler;
         Init();
     }
 
@@ -48,6 +51,9 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
         listView_Speaker = (ListView)findViewById(R.id.listViewSpeaker);//장치정보 보여줄 listview
         listData = new ArrayList<PairedDevice>();//장치 정보
         selectedDevice = new ArrayList<PairedDevice>();//선택된 장치들
+        if(dbHandler.getSpeakerDB() !=null){
+            selectedDevice.addAll(dbHandler.getSpeakerDB());
+        }
         listViewAdapter_Speaker = new ListViewAdapter(getApplicationContext(),R.layout.row,selectedDevice);
         listView_Speaker.setAdapter(listViewAdapter_Speaker);
         Switch bluetoothSwitch = (Switch)findViewById(R.id.bluetoothSwitch);//볼륨 스위치
@@ -113,7 +119,7 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
                     for(BluetoothDevice device : pairingDeivces)
                     {
 
-                        PairedDevice data = new PairedDevice(device.getName(),device.getAddress());//각 디바이스의 정보에 대한 데이터 생성
+                        PairedDevice data = new PairedDevice(device.getAddress(),device.getName());//각 디바이스의 정보에 대한 데이터 생성
                         listData.add(data);//데이터를 리스트에 저장
 
                     }
@@ -198,15 +204,18 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
         if(requestCode==request_code && resultCode== Activity.RESULT_OK)
         {
             PairedDevice device = (PairedDevice)data.getExtras().get("data");
-            for(PairedDevice devices : selectedDevice)
-            {
-                if(devices.getAddress().equals(device.getAddress()))
+//            for(PairedDevice devices : selectedDevice)
+//            {
+                if(dbHandler.selectSpeaker(device.getAddress()) != null)
                 {
                     Toast.makeText(getBaseContext(),"이미 선택한 장치입니다.",Toast.LENGTH_SHORT).show();
                     return;
                 }
+                else{
+                    dbHandler.addSpeaker(device);
+                }
 
-            }
+//            }
             selectedDevice.add(device);
             listViewAdapter_Speaker.notifyDataSetChanged();
         }
