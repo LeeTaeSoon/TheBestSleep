@@ -27,12 +27,16 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
 
 import javax.net.ssl.HttpsURLConnection;
 
 public class plugSignIn extends Activity{
     EditText mEmail;
     EditText mPassword;
+    String user_email;
+    String user_pass;
+    String errormsg=null;
     DBHandler dbHandler;
 
     @Override
@@ -47,8 +51,8 @@ public class plugSignIn extends Activity{
     }
 
     public void KasaLogin(View view) {
-        String user_email = mEmail.getText().toString();
-        String user_pass = mPassword.getText().toString();
+        user_email = mEmail.getText().toString();
+        user_pass = mPassword.getText().toString();
         user_email.trim();
         user_pass.trim();
 
@@ -78,41 +82,19 @@ public class plugSignIn extends Activity{
             focusView.requestFocus();
         }
         else{
-            //id, password 입력폼이 맞게 들어와도 kasa에 등록되어 있는지 판단하는 부분이 필요.
-//            String uuid;
-//
-//            Thread checkUserInfo =new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    try {
-//                        Document doc = null;
-//                        doc = Jsoup.connect("https://www.uuidgenerator.net/version4").get();
-//                        Elements mes = doc.select("h2");
-//                        for(Element me : mes)
-//                        {
-//                            uuid = me.text();
-//                            Log.d("uuid",uuid+"is Connected Svlistener");
-//                            break;
-//                        }
-//
-//                        if(getToken() !=0) return ;// 아이디, 비밀번호중 하나가 틀렸을 경우 즉, Token을 못받아왔으면 쓰레드를 종료한다.
-//                        getDeviceList();//사용자가 입력한 계정에 등록된 장치의 URL, ID, Alias(사용자가 정한 디바이스의 이름)를 가져온다.
-//                    }
-//
-//                    catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                    return;
-//                }
-//            });
-//
-//            checkUserInfo.start();
-//            try {
-//                checkUserInfo.join();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+            LoginKasa loginKasa = new LoginKasa();
+            try {
+                loginKasa.execute().get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
 
+            if(errormsg !=null)//Kasa 정보와 일치하지 않을 때.
+            {
+//                errormsg.indexOf()
+            }
 
 
 
@@ -120,7 +102,7 @@ public class plugSignIn extends Activity{
             ///
             Intent i = new Intent(plugSignIn.this, PlugList.class);
             i.putExtra("email",user_email);
-            i.putExtra("password",user_pass);
+//            i.putExtra("password",user_pass);
             mEmail.setText("");
             mPassword.setText("");
             startActivity(i);
@@ -136,41 +118,106 @@ public class plugSignIn extends Activity{
 
 
 //
-//    private class MainPageTask extends AsyncTask<Void,Void,Void>
-//    {
-//        String uuid;
-//        String token;
-//        @Override
-//        protected void onPostExecute(Void result)
-//        { //doInBackground 작업이 끝나고 난뒤의 작업
-//
-//        }
-//
-//        @Override
-//        protected Void doInBackground(Void... params)
-//        { //백그라운드 작업이 진행되는 곳.
-//            try {
-//                Document doc = null;
-//                doc = Jsoup.connect("https://www.uuidgenerator.net/version4").get();
-//                Elements mes = doc.select("h2");
-//                for(Element me : mes)
-//                {
-//                    uuid = me.text();
-//                    Log.d("uuid",uuid+"is Connected Svlistener");
-//                    break;
-//                }
-//
-//                if(getToken() !=0) return null;// 아이디, 비밀번호중 하나가 틀렸을 경우 즉, Token을 못받아왔으면 쓰레드를 종료한다.
-//
+    private class LoginKasa extends AsyncTask<Void,Void,Void>
+    {
+        String uuid;
+        String token;
+        @Override
+        protected void onPostExecute(Void result)
+        { //doInBackground 작업이 끝나고 난뒤의 작업
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... params)
+        { //백그라운드 작업이 진행되는 곳.
+            try {
+                Document doc = null;
+                doc = Jsoup.connect("https://www.uuidgenerator.net/version4").get();
+                Elements mes = doc.select("h2");
+                for(Element me : mes)
+                {
+                    uuid = me.text();
+                    Log.d("uuid",uuid+"is Connected Svlistener");
+                    break;
+                }
+
+                if(getToken() !=0) return null;// 아이디, 비밀번호중 하나가 틀렸을 경우 즉, Token을 못받아왔으면 쓰레드를 종료한다.
+
 //                getDeviceList();//사용자가 입력한 계정에 등록된 장치의 URL, ID, Alias(사용자가 정한 디바이스의 이름)를 가져온다.
-//            }
-//
-//            catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            return null;
-//        }
-//
+            }
+
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        private int getToken()  {
+            try {
+                URL url = new URL("https://wap.tplinkcloud.com");
+
+                JSONObject jsonObject1 = new JSONObject();
+                jsonObject1.accumulate("appType", "Kasa_Android");
+                jsonObject1.accumulate("cloudPassword", user_pass); //사용자가 입력한 값으로 받자.
+                jsonObject1.accumulate("cloudUserName", user_email);//사용자가 입력한 값으로 받아오기.
+                jsonObject1.accumulate("terminalUUID", uuid);
+
+                JSONObject jsonObject2 = new JSONObject();
+                jsonObject2.accumulate("method", "login");
+                jsonObject2.accumulate("params", jsonObject1);
+
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");//POST message
+                connection.setRequestProperty("Content-type", "application/json");
+                connection.setDoOutput(true);
+                connection.setDoInput(true);
+
+
+                OutputStream outputStream = connection.getOutputStream();
+                outputStream.write(jsonObject2.toString().getBytes());
+                outputStream.flush();
+
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)//값을 잘 받았을 때.
+                {
+                    InputStream inputStream = connection.getInputStream();
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    byte[] byteBuffer = new byte[1024];
+                    byte[] byteData = null;
+                    int nLength = 0;
+                    while((nLength = inputStream.read(byteBuffer, 0, byteBuffer.length)) != -1) {
+                        byteArrayOutputStream.write(byteBuffer, 0, nLength);
+                    }
+                    byteData = byteArrayOutputStream.toByteArray();
+                    String response = new String(byteData);
+
+                    final JSONObject responseJSON = new JSONObject(response);
+                    Log.d("uuid","json :" +responseJSON.toString());
+
+                    if((int)responseJSON.get("error_code") != 0)//비밀번호가 틀렸거나 아이디가 틀림. -> alert로 메세지를 띄우고 스레드 종료.
+                    {
+                        errormsg = responseJSON.get("msg").toString();
+                    }
+
+                    else{
+                        JSONObject responseJSON2 = new JSONObject(responseJSON.get("result").toString());
+                        token = (String)responseJSON2.get("token");
+                        Log.d("uuid","token : "+token);
+                        //여기서 userInfo Table에 추가하자.
+                        KasaInfo kasaInfo = new KasaInfo(user_email,token);
+                        dbHandler.addPlugUser(kasaInfo);
+                    }
+                    return (int)responseJSON.get("error_code");
+                }
+
+            }
+            catch (MalformedURLException e) { e.printStackTrace();}
+            catch (IOException e) {e.printStackTrace();}
+            catch (JSONException e) {e.printStackTrace();}
+
+            return -1;
+        }
+
 //        private void getDeviceList() {//url, id, alias값을 받아오는 곳. ,token 필요.
 //            try {
 //                URL url = new URL("https://wap.tplinkcloud.com?token="+token);
@@ -230,91 +277,8 @@ public class plugSignIn extends Activity{
 //                e.printStackTrace();
 //            }
 //
-//
 //        }
-//
-//
-//        private int getToken()  {
-//            try {
-//                URL url = new URL("https://wap.tplinkcloud.com");
-//
-//                JSONObject jsonObject1 = new JSONObject();
-//                jsonObject1.accumulate("appType", "Kasa_Android");
-//                jsonObject1.accumulate("cloudPassword", "1q2w3e4r"); //사용자가 입력한 값으로 받자.
-//                jsonObject1.accumulate("cloudUserName", "xxxxx@naver.com");//사용자가 입력한 값으로 받아오기.
-//                jsonObject1.accumulate("terminalUUID", uuid);
-//
-//                JSONObject jsonObject2 = new JSONObject();
-//                jsonObject2.accumulate("method", "login");
-//                jsonObject2.accumulate("params", jsonObject1);
-//
-//                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-//                connection.setRequestMethod("POST");//POST message
-//                connection.setRequestProperty("Content-type", "application/json");
-//                connection.setDoOutput(true);
-//                connection.setDoInput(true);
-//
-//
-//                OutputStream outputStream = connection.getOutputStream();
-//                outputStream.write(jsonObject2.toString().getBytes());
-//                outputStream.flush();
-//
-//                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)//값을 잘 받았을 때.
-//                {
-//                    InputStream inputStream = connection.getInputStream();
-//                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//                    byte[] byteBuffer = new byte[1024];
-//                    byte[] byteData = null;
-//                    int nLength = 0;
-//                    while((nLength = inputStream.read(byteBuffer, 0, byteBuffer.length)) != -1) {
-//                        byteArrayOutputStream.write(byteBuffer, 0, nLength);
-//                    }
-//                    byteData = byteArrayOutputStream.toByteArray();
-//                    String response = new String(byteData);
-//
-//                    final JSONObject responseJSON = new JSONObject(response);
-//                    Log.d("uuid","json :" +responseJSON.toString());
-//
-//                    if((int)responseJSON.get("error_code") != 0)//비밀번호가 틀렸거나 아이디가 틀림. -> alert로 메세지를 띄우고 스레드 종료.
-//                    {
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                AlertDialog.Builder alert = new AlertDialog.Builder(SmartPlug.this);
-//                                alert.setPositiveButton("확인", new DialogInterface.OnClickListener() {
-//                                    @Override
-//                                    public void onClick(DialogInterface dialogInterface, int i) {
-//                                        dialogInterface.dismiss();
-//
-//                                    }
-//                                });
-//
-//                                try {
-//                                    alert.setMessage(responseJSON.get("msg").toString());
-//                                } catch (JSONException e) {
-//                                    e.printStackTrace();
-//                                }
-//                                alert.show();
-//                            }
-//                        });
-//                    }
-//
-//                    else{
-//                        JSONObject responseJSON2 = new JSONObject(responseJSON.get("result").toString());
-//                        token = (String)responseJSON2.get("token");
-//                        Log.d("uuid","token : "+token);
-//                    }
-//                    return (int)responseJSON.get("error_code");
-//                }
-//
-//            }
-//            catch (MalformedURLException e) { e.printStackTrace();}
-//            catch (IOException e) {e.printStackTrace();}
-//            catch (JSONException e) {e.printStackTrace();}
-//
-//            return -1;
-//        }
-//
-//    }
+
+    }
 
 }

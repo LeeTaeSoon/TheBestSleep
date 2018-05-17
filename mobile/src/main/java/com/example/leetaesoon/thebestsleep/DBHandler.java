@@ -20,7 +20,10 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     public static final String SPEAKER_ADDRESS = "address";
     public static final String SPEAKER_NAME="name";
 
-    public static final String DATABASE_TABLE_PLUG = "plugs";
+    public static final String DATABASE_TABLE_PLUG_USER = "userInfo";
+    public static final String PLUG_USER_ID = "id";
+    public static final String PLUG_USER_PASSWORD = "password";
+    public static final String PLUG_USER_TOKEN = "token";
 
     public static final String DATABASE_TABLE_LIGHT = "lights";
 
@@ -33,12 +36,15 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_SPEAKER);
-        String CREATE_TABLE = "create table if not exists  " + DATABASE_TABLE_SPEAKER + "(" + SPEAKER_ADDRESS +
+        String CREATE_SPEAKER_TABLE = "create table if not exists  " + DATABASE_TABLE_SPEAKER + "(" + SPEAKER_ADDRESS +
                 " text primary key, " + SPEAKER_NAME + " text)";
-        db.execSQL(CREATE_TABLE);// Speaker DB 생성.
+        db.execSQL(CREATE_SPEAKER_TABLE);// Speaker DB 생성.
 
         //Plug DB 생성
-
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_PLUG_USER);
+        String CREATE_PLUG_TABLE = "create table if not exists  " + DATABASE_TABLE_PLUG_USER + "(" + PLUG_USER_ID +
+                " text primary key, " + PLUG_USER_TOKEN + " text)";
+        db.execSQL(CREATE_PLUG_TABLE);
 
         //Light DB 생성
     }
@@ -46,6 +52,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_SPEAKER);
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_PLUG_USER);
         onCreate(db);
     }
 
@@ -149,6 +156,96 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
                 }
 
                 PairedDevice product = new PairedDevice(address,name);
+                listData.add(product);
+                cursor.moveToNext();
+            }
+        }
+        else
+        {
+            listData = null;
+        }
+        cursor.close();
+        db.close();
+        return listData;
+    }
+
+    public void addPlugUser(KasaInfo product){//plug DB에 새로운 user를 추가하는 부분.
+
+        ContentValues value = new ContentValues();
+        value.put(PLUG_USER_ID,product.getUserId());
+        value.put(PLUG_USER_TOKEN,product.getUserToken());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(DATABASE_TABLE_PLUG_USER,null,value);
+        db.close();
+    }
+    public boolean deletePlugUser(String productid)//Logout 시 저장되어 있던 유저 정보 삭제.
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT * FROM "+DATABASE_TABLE_PLUG_USER+" where "+PLUG_USER_ID
+                +"=\'"+productid+"\'";
+        Cursor cursor = db.rawQuery(query,null);
+
+        if(cursor.moveToFirst())
+        {
+            db.delete(DATABASE_TABLE_PLUG_USER,PLUG_USER_ID+"=?",new String[]{cursor.getString(0)});
+            //Toast.makeText(m_context,cursor.getString(0),Toast.LENGTH_SHORT).show();
+            cursor.close();
+            db.close();
+            return true;
+        }
+        db.close();
+        return false;
+    }
+    public KasaInfo selectPlugUser(String productid)//
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_PLUG_USER+" WHERE "
+                +PLUG_USER_ID+"=\'"+productid+"\'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+
+        KasaInfo product = new KasaInfo();
+
+        if(cursor.moveToFirst())
+        {
+            product.setUserId(cursor.getString(0));
+            product.setUserToken(cursor.getString(1));
+        }
+        else
+            product=null;
+        cursor.close();
+        db.close();
+        return product;
+    }
+
+    public ArrayList<KasaInfo> getPlugUserDB()
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_PLUG_USER;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+        ArrayList<KasaInfo> listData = new ArrayList<>();
+
+        if(cursor.moveToFirst())
+        {
+            String id="";
+            String token="";
+
+            while(!cursor.isAfterLast())
+            {
+                for(int i=0;i<cursor.getColumnCount();i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case PLUG_USER_ID:
+                            id= cursor.getString(i);
+                            break;
+                        case PLUG_USER_TOKEN:
+                            token = cursor.getString(i);
+                            break;
+                    }
+                }
+
+                KasaInfo product = new KasaInfo(id,token);
                 listData.add(product);
                 cursor.moveToNext();
             }
