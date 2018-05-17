@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,6 +28,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -46,7 +48,15 @@ public class plugSignIn extends Activity{
         mEmail = (EditText) findViewById(R.id.email);
         mPassword = (EditText) findViewById(R.id.password);
         dbHandler = MainActivity.dbHandler;
-        //만약 DB에 id, password 정보가 있으면 login 과정 없이 device목록을 찾아 device DB에 없는 장치가 있으면 DB에 추가.
+        //만약 DB에 id, token정보가 있으면 login 과정 없이 device목록을 찾아 device DB에 없는 장치가 있으면 DB에 추가.
+        if(dbHandler.getPlugUserDB() != null)
+        {
+            Intent i = new Intent(plugSignIn.this, PlugList.class);
+            ArrayList<KasaInfo> listData = new ArrayList<>();
+            listData.addAll(dbHandler.getPlugUserDB());
+            i.putExtra("email",listData.get(0).getUserId());
+            startActivity(i);
+        }
 
     }
 
@@ -93,19 +103,34 @@ public class plugSignIn extends Activity{
 
             if(errormsg !=null)//Kasa 정보와 일치하지 않을 때.
             {
-//                errormsg.indexOf()
+                if(errormsg.indexOf("Account") >=0)
+                {
+                    mEmail.setError(errormsg);
+                    focusView = mEmail;
+                    focusView.requestFocus();
+                    errormsg=null;
+                }
+                else
+                {
+                    mPassword.setError(errormsg);
+                    focusView = mPassword;
+                    focusView.requestFocus();
+                    errormsg=null;
+                }
+            }
+            else{
+                Intent i = new Intent(plugSignIn.this, PlugList.class);
+                i.putExtra("email",user_email);
+//            i.putExtra("password",user_pass);
+                mEmail.setText("");
+                mPassword.setText("");
+                startActivity(i);
             }
 
 
 
-
             ///
-            Intent i = new Intent(plugSignIn.this, PlugList.class);
-            i.putExtra("email",user_email);
-//            i.putExtra("password",user_pass);
-            mEmail.setText("");
-            mPassword.setText("");
-            startActivity(i);
+
         }
     }
 

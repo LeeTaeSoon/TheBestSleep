@@ -18,15 +18,18 @@ public class PlugList extends Activity {
     List<PlugItem> plugItems;
     PlugAdapter plugAdapter;
     TextView user_id;
+    DBHandler dbHandler;
+    String user_email;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plug_list);
+        dbHandler = MainActivity.dbHandler;
         init();
     }
     public void init(){
         Intent intent = getIntent();
-        String user_email = intent.getStringExtra("email");
+        user_email = intent.getStringExtra("email");
         user_id = (TextView)findViewById(R.id.user_id);
         user_id.setText(user_email +" 님");
 
@@ -53,6 +56,8 @@ public class PlugList extends Activity {
     }
 
     public void KasaLogout(View view) {
+        dbHandler.deletePlugUser(user_email);
+        //device 설정에 대한 정보도 delete 해줘야 함.
         finish();
     }
 }
