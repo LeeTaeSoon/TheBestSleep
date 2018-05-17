@@ -33,7 +33,7 @@ public class SpeakerSelect extends Activity implements Serializable{
 
 
         listView = (ListView)findViewById(R.id.speakerSelect);
-        listAdapter = new ListViewAdapter(getApplicationContext(),R.layout.row,listData);
+        listAdapter = new SpeakerSelectAdapter(getApplicationContext(),R.layout.row2,listData);
         listView.setAdapter(listAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
