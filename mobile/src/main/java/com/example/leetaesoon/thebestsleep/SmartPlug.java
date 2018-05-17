@@ -181,18 +181,7 @@ public class SmartPlug extends Activity {
         @Override
         protected void onPostExecute(Void result)
         { //doInBackground 작업이 끝나고 난뒤의 작업
-//            Toast.makeText(SmartPlug.this,"uuid : "+uuid,Toast.LENGTH_LONG).show();
 
-//            if(plugList.get(0).getstatus().equals("1"))//앱을 켰을 때 장치 상태를 파악해 보여준다.
-//            {
-//                switch1.setChecked(true);
-//                Log.d("uuid","초기값 true");
-//            }
-//            else
-//            {
-//                Log.d("uuid","초기값 false");
-//                switch1.setChecked(false);
-//            }
         }
 
         @Override
