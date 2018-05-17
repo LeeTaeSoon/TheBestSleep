@@ -52,10 +52,10 @@ public class plugSignIn extends Activity{
             focusView.requestFocus();
 
         }
-        else if()//카사에 보냈을 때, SmartPlug.java 에서 가져와야한다.
-        {
-            focusView.requestFocus();
-        }
+//        else if()//카사에 보냈을 때, SmartPlug.java 에서 가져와야한다.
+//        {
+//            focusView.requestFocus();
+//        }
         else{
             Intent i = new Intent(plugSignIn.this, PlugList.class);
             i.putExtra("email",user_email);
