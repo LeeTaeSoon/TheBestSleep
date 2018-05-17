@@ -31,8 +31,8 @@
         <activity
             android:name=".MainActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <activity android:name=".SpeakerSelect" />
-        <activity android:name=".BluetoothSpeaker" />
+        <activity android:name=".SpeakerSelect" android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity android:name=".BluetoothSpeaker" android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity
             android:name=".SplashActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar">
@@ -43,7 +43,7 @@
              </intent-filter>
         </activity>
 
-        <activity android:name=".SmartLight">
+        <activity android:name=".SmartLight" >
         </activity>
         <activity android:name=".PHHomeActivity">
             <!--<intent-filter>-->

@@ -24,7 +24,8 @@
         android:layout_marginHorizontal="25dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="R" />
+        android:text="R"
+        android:textColor="#FFFFFF"/>
 
     <SeekBar
         android:layout_marginHorizontal="10dp"
@@ -41,7 +42,8 @@
         android:layout_marginHorizontal="25dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="G" />
+        android:text="G"
+        android:textColor="#FFFFFF"/>
 
     <SeekBar
         android:layout_marginHorizontal="10dp"
@@ -58,7 +60,8 @@
         android:layout_marginHorizontal="25dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="B" />
+        android:text="B"
+        android:textColor="#FFFFFF"/>
 
     <SeekBar
         android:layout_marginHorizontal="10dp"

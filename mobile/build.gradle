@@ -31,7 +31,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     wearApp project(':wear')
     implementation 'com.google.android.gms:play-services-wearable:+'
-    compile 'org.jsoup:jsoup:1.10.1'
+    implementation 'org.jsoup:jsoup:1.10.1'
     implementation files('src/main/libs/huelocalsdk.jar')
     implementation files('src/main/libs/huesdkresources.jar')
     implementation 'com.larswerkman:HoloColorPicker:1.5'

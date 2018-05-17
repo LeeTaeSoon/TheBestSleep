@@ -31,6 +31,7 @@
             android:orientation="vertical">
 
             <EditText
+                android:textColor="#FFFFFF"
                 android:id="@+id/email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -40,6 +41,7 @@
                 android:singleLine="true" />
 
             <EditText
+                android:textColor="#FFFFFF"
                 android:id="@+id/password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

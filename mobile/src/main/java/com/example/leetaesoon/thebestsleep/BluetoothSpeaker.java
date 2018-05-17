@@ -26,9 +26,7 @@ import java.util.Set;
 public class BluetoothSpeaker extends  Activity implements Serializable {
     BluetoothAdapter m_BtAdapter;// onCreate에서 정의함.(bluetooth 송수신 장치)
     BluetoothA2dp m_A2dpService; // m_A2dpListener에서 정의함.(블루투스를 통한 오디오 스트리밍 방법 정의)
-    AudioManager m_Audio;
     ImageButton speakerPlus;
-    SeekBar volumeSeekBar;
     Intent bluetoothIntent;
     ArrayList<PairedDevice> listData;//현재 연결된 기기의 정보를 가져온다.(사용자가 등록한 주소와 비교해서 볼륨을 낮추거나 블루투스를 끄도록 하기위함)
     ArrayList<PairedDevice> selectedDevice;//선택된 기기의 정보를 저장한다.
@@ -57,9 +55,8 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
         listViewAdapter_Speaker = new ListViewAdapter(getApplicationContext(),R.layout.row,selectedDevice);
         listView_Speaker.setAdapter(listViewAdapter_Speaker);
         Switch bluetoothSwitch = (Switch)findViewById(R.id.bluetoothSwitch);//볼륨 스위치
-        m_Audio = (AudioManager)getSystemService(Context.AUDIO_SERVICE);//볼륨 조절을 위함.
-        volumeSeekBar = (SeekBar)findViewById(R.id.volumeSeekbar); //볼륨 조절 바
         speakerPlus = (ImageButton)findViewById(R.id.speakerPlus);
+
         getConnectedDevice();
 
         //블루투스
@@ -87,27 +84,6 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
             }
         });
 
-        //볼륨
-        volumeSeekBar.setMax(m_Audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
-        volumeSeekBar.setProgress(m_Audio.getStreamVolume(AudioManager.STREAM_MUSIC),true);//현재 볼륨으로 seekbar의 초기값을 초기화 해준다.
-        Toast.makeText(this," "+m_Audio.getStreamVolume(AudioManager.STREAM_MUSIC),Toast.LENGTH_SHORT);
-        volumeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {//seekbar를 움직일 때만 볼륨 변화.
-                m_Audio.setStreamVolume(AudioManager.STREAM_MUSIC,progress,AudioManager.FLAG_PLAY_SOUND);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
         speakerPlus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {//현재 페어링 된 기기를 보여주고 선택할 수 있도록 넘겨준다.
@@ -130,31 +106,6 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
                 startActivityForResult(intent,request_code);
             }
         });
-    }
-
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-
-        if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN)
-        {
-            //volumeSeekBar.setProgress(m_Audio.getStreamVolume(AudioManager.STREAM_MUSIC),true);
-            // Toast.makeText(this," " + m_Audio.getStreamVolume(AudioManager.STREAM_MUSIC),Toast.LENGTH_SHORT);
-            int vol = volumeSeekBar.getProgress();
-            if(vol>=0)
-                volumeSeekBar.setProgress(vol-1);
-            return true;
-        }
-        else if(keyCode==KeyEvent.KEYCODE_VOLUME_UP)
-        {
-            //volumeSeekBar.setProgress(m_Audio.getStreamVolume(AudioManager.STREAM_MUSIC),true);
-            //Toast.makeText(this," " + m_Audio.getStreamVolume(AudioManager.STREAM_MUSIC),Toast.LENGTH_SHORT);
-            int vol = volumeSeekBar.getProgress();
-            if(vol<=m_Audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
-            volumeSeekBar.setProgress(vol+1);
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
     }
 
     public void getConnectedDevice()
