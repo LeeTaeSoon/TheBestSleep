@@ -1,119 +1,113 @@
 package com.example.leetaesoon.thebestsleep;
 
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
-import android.widget.TextView;
+import android.view.View;
+import android.widget.ImageButton;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import com.google.android.gms.wearable.CapabilityClient;
-import com.google.android.gms.wearable.CapabilityInfo;
-import com.google.android.gms.wearable.Node;
-import com.google.android.gms.wearable.NodeApi;
-import com.google.android.gms.wearable.Wearable;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-public class MainActivity extends WearableActivity implements CapabilityClient.OnCapabilityChangedListener {
+public class MainActivity extends WearableActivity {
 
     private static final String TAG = "MainActivity";
-    private static final String BODY_SENSOR_CAPABILITY_NAME = "body_sensor";
-    public static final String BODY_SENSOR_MESSAGE_PATH = "/body_sensor";
-    private int CONNECTION_TIME_OUT_MS = 2000;
-    private String nodeId;
 
-    TextView mTextView;
-
-    private void setupVoiceTranscription() throws ExecutionException, InterruptedException {
-        Log.d(TAG, "enter setupVoiceTranscription");
-        CapabilityInfo capabilityInfo = Tasks.await(
-                Wearable.getCapabilityClient(this).getCapability(
-                        BODY_SENSOR_CAPABILITY_NAME, CapabilityClient.FILTER_REACHABLE));
-        // capabilityInfo has the reachable nodes with the transcription capability
-        updateTranscriptionCapability(capabilityInfo);
-
-        Wearable.getCapabilityClient(this).addListener(this, BODY_SENSOR_CAPABILITY_NAME);
-        Log.d(TAG, "exit setupVoiceTranscription");
-    }
-
-    @Override
-    public void onCapabilityChanged(@NonNull CapabilityInfo capabilityInfo) {
-        Log.d(TAG, "enter onCapabilityChanged");
-        updateTranscriptionCapability(capabilityInfo);
-        Log.d(TAG, "exit onCapabilityChanged");
-    }
-
-    private void updateTranscriptionCapability(CapabilityInfo capabilityInfo) {
-        Log.d(TAG, "enter updateTranscriptionCapability");
-        Set<Node> connectedNodes = capabilityInfo.getNodes();
-
-        nodeId = pickBestNodeId(connectedNodes);
-        Log.d(TAG, "picked nodeid : " + nodeId);
-        Log.d(TAG, "exit updateTranscriptionCapability");
-    }
-
-    private String pickBestNodeId(Set<Node> nodes) {
-        String bestNodeId = null;
-        // Find a nearby node or pick one arbitrarily
-        for (Node node : nodes) {
-            if (node.isNearby()) {
-                return node.getId();
-            }
-            bestNodeId = node.getId();
-        }
-        return bestNodeId;
-    }
-
-    private void requestTranscription(byte[] sensorData) {
-        Log.d(TAG, "enter requestTranscription");
-        if (nodeId != null) {
-            Task<Integer> sendTask =
-                    Wearable.getMessageClient(this).sendMessage(nodeId, BODY_SENSOR_MESSAGE_PATH, sensorData);
-            // You can add success and/or failure listeners,
-            // Or you can call Tasks.await() and catch ExecutionException
-            //sendTask.addOnSuccessListener(...);
-            //sendTask.addOnFailureListener(...);
-
-            Log.d(TAG, "sendTask : " + sendTask.toString());
-        } else {
-            // Unable to retrieve node with transcription capability
-            Log.d(TAG, "Unable to retrieve node with transcription capability");
-        }
-        Log.d(TAG, "exit requestTranscription");
-    }
+    ImageButton mImageButton;
+    int using;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTextView = findViewById(R.id.text);
-        mTextView.setText("hello");
+        mImageButton = findViewById(R.id.button);
 
-        final String data = "string data";
+        String status = readFromFile();
+        // TODO : 껏다가 켰을때 서비스를 하나 더 만들게 됨
+        if (status.trim().equals("1")) onService();
+        else offService();
+        Log.d(TAG, "using : " + using);
 
-        new Thread(new Runnable() {
+        mImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void run() {
-                try {
-                    setupVoiceTranscription();
-                    requestTranscription(data.getBytes());
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            public void onClick(View v) {
+                if (using == 0) onService();
+                else offService();
             }
-        }).start();
+        });
 
         // Enables Always-on
         setAmbientEnabled();
+    }
+
+    public void onService() {
+        Log.d(TAG, "Service On");
+        mImageButton.setImageResource(R.drawable.stop);
+        using = 1;
+
+        Intent intent = new Intent(this, SensorService.class);
+        startService(intent);
+    }
+
+    public void offService() {
+        Log.d(TAG, "Service Off");
+        mImageButton.setImageResource(R.drawable.using);
+        using = 0;
+
+        Intent intent = new Intent(this, SensorService.class);
+        stopService(intent);
+    }
+
+    @Override
+    protected void onPause() {
+        writeToFile(String.valueOf(using));
+        super.onPause();
+    }
+
+    private void writeToFile(String data) {
+        try {
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(openFileOutput("service_status.txt", MODE_PRIVATE));
+            outputStreamWriter.write(data);
+            outputStreamWriter.close();
+        } catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+    }
+
+    private String readFromFile() {
+        Log.d(TAG, "Start read file");
+        String ret = "";
+
+        try {
+            InputStream inputStream = openFileInput("service_status.txt");
+
+            if (inputStream != null) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while ((receiveString = bufferedReader.readLine()) != null) {
+                    Log.d(TAG, "receiveString: " + receiveString);
+                    stringBuilder.append(receiveString);
+                }
+
+                inputStream.close();
+                ret = stringBuilder.toString();
+            }
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, "File not found: " + e.toString());
+        } catch (IOException e) {
+            Log.e(TAG, "Can not read file: " + e.toString());
+        }
+
+        Log.d(TAG, "End read file");
+        return ret;
     }
 }
