@@ -27,6 +27,26 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
 
     public static final String DATABASE_TABLE_LIGHT = "lights";
 
+    public static final String DATABASE_TABLE_ACCELERATION = "acceleration";
+    public static final String ACCELERATION_ID="id";
+    public static final String ACCELERATION_TIME="time";
+    public static final String ACCELERATION_X = "x";
+    public static final String ACCELERATION_Y = "y";
+    public static final String ACCELERATION_Z = "z";
+
+    public static final String DATABASE_TABLE_GYRO = "gyro";
+    public static final String GYRO_ID = "id";
+    public static final String GYRO_TIME = "time";
+    public static final String GYRO_X = "x";
+    public static final String GYRO_Y = "y";
+    public static final String GYRO_Z = "z";
+
+    public static final String DATABASE_TABLE_HEARTRATE = "heartRate";
+    public static final String HEARTRATE_ID = "id";
+    public static final String HEARTRATE_RATE = "rate";
+
+
+
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, DATABASE_NAME, factory, version);
@@ -47,12 +67,33 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         db.execSQL(CREATE_PLUG_TABLE);
 
         //Light DB 생성
+
+
+        //watch 에서 받아오는 정보
+        //가속도
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_ACCELERATION);
+        String CREATE_ACCELERATION_TABLE = "create table if not exists  " + DATABASE_TABLE_ACCELERATION + "(" + ACCELERATION_ID+
+                " integer primary key autoincrement, " + ACCELERATION_TIME +" text, "+ ACCELERATION_X +" real, "+ ACCELERATION_Y + " real, "+ ACCELERATION_Z +" real)";
+        db.execSQL(CREATE_ACCELERATION_TABLE);
+        //자이로
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_GYRO);
+        String CREATE_GYRO_TABLE = "create table if not exists  " + DATABASE_TABLE_GYRO + "(" + GYRO_ID+
+                " integer primary key autoincrement, " + GYRO_TIME +" text, "+ GYRO_X +" real, "+ GYRO_Y + " real, "+ GYRO_Z +" real)";
+        db.execSQL(CREATE_GYRO_TABLE);
+        //심박수
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_HEARTRATE);
+        String CREATE_HEARTRATE_TABLE = "create table if not exists  " + DATABASE_TABLE_HEARTRATE + "(" + HEARTRATE_ID+
+                " integer primary key autoincrement, " + HEARTRATE_RATE +" integer)";
+        db.execSQL(CREATE_HEARTRATE_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_SPEAKER);
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_PLUG_USER);
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_ACCELERATION);
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_GYRO);
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_HEARTRATE);
         onCreate(db);
     }
 
@@ -257,5 +298,193 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         cursor.close();
         db.close();
         return listData;
+    }
+
+    public void addAcceleration(Acceleration product){//가속도 값 DB에 추가.
+
+        ContentValues value = new ContentValues();
+        value.put(ACCELERATION_TIME,product.getAccelerationTime());
+        value.put(ACCELERATION_X,product.getAccelerationX());
+        value.put(ACCELERATION_Y,product.getAccelerationY());
+        value.put(ACCELERATION_Z,product.getAccelerationZ());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(DATABASE_TABLE_ACCELERATION,null,value);
+        db.close();
+    }
+
+    public ArrayList<Acceleration> getAccelerationDB()// 가속도 DB 전체 가져오기.
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_ACCELERATION;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+        ArrayList<Acceleration> listData = new ArrayList<>();
+
+        if(cursor.moveToFirst())
+        {
+            String time="";
+            double x = 0;
+            double y = 0;
+            double z = 0;
+
+            while(!cursor.isAfterLast())
+            {
+                for(int i=0;i<cursor.getColumnCount();i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case ACCELERATION_TIME:
+                            time = cursor.getString(i);
+                            break;
+                        case ACCELERATION_X:
+                            x = cursor.getDouble(i);
+                            break;
+                        case ACCELERATION_Y:
+                            y = cursor.getDouble(i);
+                            break;
+                        case ACCELERATION_Z:
+                            z = cursor.getDouble(i);
+                            break;
+                    }
+                }
+
+                Acceleration product = new Acceleration(time,x,y,z);
+                listData.add(product);
+                cursor.moveToNext();
+            }
+        }
+        else
+        {
+            listData = null;
+        }
+        cursor.close();
+        db.close();
+        return listData;
+    }
+
+    //Acceleration Table 삭제
+    public void deleteAccelerationDB(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(DATABASE_TABLE_ACCELERATION,null,null);
+    }
+
+    //Gyro.
+    public void addGyro(Gyro product){//자이로 값 DB에 추가.
+
+        ContentValues value = new ContentValues();
+        value.put(GYRO_TIME,product.getGyroTime());
+        value.put(GYRO_X,product.getGyroX());
+        value.put(GYRO_Y,product.getGyroY());
+        value.put(GYRO_Z,product.getGyroZ());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(DATABASE_TABLE_GYRO,null,value);
+        db.close();
+    }
+
+    public ArrayList<Gyro> getGyroDB()// 자이로 DB 전체 가져오기.
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_GYRO;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+        ArrayList<Gyro> listData = new ArrayList<>();
+
+        if(cursor.moveToFirst())
+        {
+            String time="";
+            double x = 0;
+            double y = 0;
+            double z = 0;
+
+            while(!cursor.isAfterLast())
+            {
+                for(int i=0;i<cursor.getColumnCount();i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case GYRO_TIME:
+                            time = cursor.getString(i);
+                            break;
+                        case GYRO_X:
+                            x = cursor.getDouble(i);
+                            break;
+                        case GYRO_Y:
+                            y = cursor.getDouble(i);
+                            break;
+                        case GYRO_Z:
+                            z = cursor.getDouble(i);
+                            break;
+                    }
+                }
+
+                Gyro product = new Gyro(time,x,y,z);
+                listData.add(product);
+                cursor.moveToNext();
+            }
+        }
+        else
+        {
+            listData = null;
+        }
+        cursor.close();
+        db.close();
+        return listData;
+    }
+
+    public void deleteGyroDB(){//Gyro Table 삭제
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(DATABASE_TABLE_GYRO,null,null);
+    }
+
+    // 심박수
+    public void addHeartRate(HeartRate product){//심박수 값 DB에 추가.
+
+        ContentValues value = new ContentValues();
+        value.put(HEARTRATE_RATE,product.getHeartRateRate());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(DATABASE_TABLE_HEARTRATE,null,value);
+        db.close();
+    }
+
+    public ArrayList<HeartRate> getHeartRateDB()//심박수 DB 전체 가져오기.
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_HEARTRATE;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+        ArrayList<HeartRate> listData = new ArrayList<>();
+
+        if(cursor.moveToFirst())
+        {
+            int rate=0;
+
+            while(!cursor.isAfterLast())
+            {
+                for(int i=0;i<cursor.getColumnCount();i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case HEARTRATE_RATE:
+                            rate = cursor.getInt(i);
+                            break;
+                    }
+                }
+
+                HeartRate product = new HeartRate(rate);
+                listData.add(product);
+                cursor.moveToNext();
+            }
+        }
+        else
+        {
+            listData = null;
+        }
+        cursor.close();
+        db.close();
+        return listData;
+    }
+    public void deleteHeartRateDB(){//Gyro Table 삭제
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(DATABASE_TABLE_HEARTRATE,null,null);
     }
 }
