@@ -17,6 +17,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +31,7 @@ public class sleepRecord extends Activity {
     LineData lineData;
     List<Entry> entries;
     List<Entry> e;
+    ArrayList<String> labels;
     SimpleDateFormat simpleDateFormat;
     float x_axis;
     int list_index = 0;
@@ -37,6 +39,7 @@ public class sleepRecord extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sleep_record);
+        simpleDateFormat = new SimpleDateFormat("HHmmss");
         x_axis = 0;
         lineChart = (LineChart)findViewById(R.id.chart1);
         Random random = new Random();
@@ -58,9 +61,9 @@ public class sleepRecord extends Activity {
             e = new ArrayList<>(entries.subList(list_index, entries.size() - 1));
             list_index = entries.size() -1;
         }
+        labels = new ArrayList<>();
 
-
-        LineDataSet lineDataSet = new LineDataSet(e, "시간");
+        LineDataSet lineDataSet = new LineDataSet(e, "Number");
         lineDataSet.setLineWidth(2);
         lineDataSet.setCircleRadius(6);
         lineDataSet.setCircleColor(Color.parseColor("#FFA1B4DC"));
@@ -101,23 +104,28 @@ public class sleepRecord extends Activity {
     public void readFile(){
         float x=0,y=0,z=0;
         double sum = 0;
+        float dateText=0;
+        Date d_t;
         Scanner scan = new Scanner(
                 getResources().openRawResource(R.raw.sensor)
         );
         while(scan.hasNextLine()){
             String str1 = scan.nextLine();
             String[] s = str1.split(" ");
-            Log.v("s_length",""+s.length);
-            //simpleDateFormat = new SimpleDateFormat("HH:mm:ss").parse(s[0]);
-            Log.v("datetime",s[0]);
+
+
             if(s.length > 1) {
+                String t = s[0].replace(":","");
+                Log.v("tt:",t);
+                dateText = Float.parseFloat(t.toString());
+                Log.v("s_length",""+s.length);
                 switch (s[1]) {
                     case "Accelerometer":
                         x = Float.parseFloat(s[3]);
                         y = Float.parseFloat(s[4]);
                         z = Float.parseFloat(s[5]);
                         sum = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
-                        entries.add(new Entry(x_axis++, (float) sum));
+                        entries.add(new Entry(dateText,(float) sum));
                         break;
                 }
             }
