@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -36,98 +37,7 @@ public class MainActivity extends Activity{
         setContentView(R.layout.activity_main);
         dbHandler = new DBHandler(this,DBHandler.DATABASE_NAME,null,1);//DBHander 생성
 
-        //여기부터 DB추가한 부분. 여기는 지우고 다른곳에서 사용하면 됨.
-        //Acceleration은 Gyro와 같은 방법으로 하면 됨.
-        Gyro acc1 = new Gyro("201311231",1.0,2.0,3.0);//Gyro 객체 만드는 방법.
-        Gyro acc2 = new Gyro("20180520",6.0,8.0,10.0);
-        dbHandler.addGyro(acc1);//db핸들러에 Gyro 객체 추가.(DB에 추가됨)
 
-        ArrayList<Gyro> list = new ArrayList<>();//db에 있는 Gyro 정보를 모두 가져오기 위한 Gyro List
-
-        if(dbHandler.getGyroDB() != null)//gyroDB에 저장된 것이 있을 때
-        {
-            list.addAll(dbHandler.getGyroDB());//GyroDB에 있는 정보를 모두 가져와 list에 저장
-
-            for(Gyro ac : list)//list에 있는 정보를 하나씩 log로 볼 수 있음.
-            {
-                Log.d("Gyro", " ( TIME : " +ac.getGyroTime() + " X : "+ac.getGyroX()+" Y : "+ac.getGyroY() + " Z : "+ac.getGyroZ());
-            }
-        }
-        dbHandler.deleteGyroDB();//현재 GyroDB에 있는 정보를 모두 삭제
-        list = new ArrayList<>();//초기화 하지 않으면 위에 생성된 list에 추가되어 보이므로 delete된 것이 안보임.
-        if(dbHandler.getGyroDB() != null)
-        {
-            list.addAll(dbHandler.getGyroDB());
-
-            for(Gyro ac : list)
-            {
-                Log.d("Gyro", " ( TIME : " +ac.getGyroTime() + " X : "+ac.getGyroX()+" Y : "+ac.getGyroY() + " Z : "+ac.getGyroZ());
-            }
-        }
-        else{//DB에 아무것도 없을 때.(delete가 정상적으로 된 경우 No db가 나오는게 정상.)
-            Log.d("Gyro", "NO db");
-        }
-
-        dbHandler.addGyro(acc2);
-        list = new ArrayList<>();
-        if(dbHandler.getGyroDB() != null)
-        {
-            list.addAll(dbHandler.getGyroDB());
-
-            for(Gyro ac : list)
-            {
-                Log.d("Gyro", " ( TIME : " +ac.getGyroTime() + " X : "+ac.getGyroX()+" Y : "+ac.getGyroY() + " Z : "+ac.getGyroZ());
-            }
-        }
-        else{
-            Log.d("Gyro", "NO db");
-        }
-
-        //심박수 객체 추가
-        HeartRate hr1 = new HeartRate(64);//심박수 객체 생성(심박수 값만 넣어주면 된다.)
-        ArrayList<HeartRate> list2;//DB에 저장된 심박수 객체를 불러와 저장할 list2
-        list2 = new ArrayList<>();
-        dbHandler.addHeartRate(hr1);//hr1이라는 심박수 객체를 db에 저장.
-
-        if(dbHandler.getHeartRateDB() != null)
-        {
-            list2.addAll(dbHandler.getHeartRateDB());
-
-            for(HeartRate ac : list2)
-            {
-                Log.d("Gyro", " ( HeartRate : " +ac.getHeartRateRate() );
-            }
-        }
-        //심박수 db 삭제
-        dbHandler.deleteHeartRateDB();
-        list2 = new ArrayList<>();
-        if(dbHandler.getHeartRateDB() != null)
-        {
-            list2.addAll(dbHandler.getHeartRateDB());
-
-            for(HeartRate ac : list2)
-            {
-                Log.d("Gyro", " ( HeartRate : " +ac.getHeartRateRate() );
-            }
-        }
-        else{
-            Log.d("Gyro", " There is  No HeartRate DB" );
-        }
-        //심박수 객체 다시 추가
-        HeartRate hr2 = new HeartRate(100);
-        dbHandler.addHeartRate(hr2);
-        list2 = new ArrayList<>();
-        if(dbHandler.getHeartRateDB() != null)
-        {
-            list2.addAll(dbHandler.getHeartRateDB());
-
-            for(HeartRate ac : list2)
-            {
-                Log.d("Gyro", " ( HeartRate : " +ac.getHeartRateRate() );
-            }
-        }
-
-    //여기까지 DB.
     }
 
     public void logShow(View view) {
@@ -150,5 +60,37 @@ public class MainActivity extends Activity{
         intent = new Intent(MainActivity.this, LampSelect.class);
         startActivity(intent);
     }
+
+    @Override
+    public void onBackPressed() {//뒤로가기 눌렀을 때.
+        //현재 블루투스 연결된 장치가 DB에 있는지 확인 후 종료
+        if(BluetoothAdapter.getDefaultAdapter().getProfileConnectionState(BluetoothProfile.A2DP) == BluetoothProfile.STATE_CONNECTED)//블루투스에 연결되어있는 상태이고
+        {
+            BluetoothAdapter.getDefaultAdapter().getProfileProxy(this, serviceListener, BluetoothProfile.A2DP);
+        }
+
+        //현재 id 값에 해당하는 DB에 저장된 모든 장치에 off 메세지 전송
+
+        super.onBackPressed();
+    }
+
+    private BluetoothProfile.ServiceListener serviceListener = new BluetoothProfile.ServiceListener() {
+        @Override
+        public void onServiceConnected(int profile, BluetoothProfile proxy) {
+            if(proxy.getConnectedDevices().isEmpty() == false)
+            {
+                BluetoothDevice device = proxy.getConnectedDevices().get(0);
+                if(dbHandler.selectSpeaker(device.getAddress()) != null)
+                {
+                    BluetoothAdapter.getDefaultAdapter().disable();
+                }
+            }
+            BluetoothAdapter.getDefaultAdapter().closeProfileProxy(profile,proxy);
+        }
+        @Override
+        public void onServiceDisconnected(int profile) {
+            Log.d("Connect","DisConnectSV");
+        }
+    };
 }
 ////
