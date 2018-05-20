@@ -348,27 +348,51 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         return false;
     }
 
-    public PlugItem selectPlug(String productid)//
+    public ArrayList<PlugItem> selectPlugs(String productid)//
     {
         String query = "SELECT * FROM "+DATABASE_TABLE_PLUG+" WHERE "
                 +PLUG_USER+"=\'"+productid+"\'";
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(query,null);
 
-        PlugItem product = new PlugItem();
+        ArrayList<PlugItem> listData = new ArrayList<>();
 
         if(cursor.moveToFirst())
         {
-            product.setdeviceId(cursor.getString(0));
-            product.seturl(cursor.getString(1));
-            product.setalias(cursor.getString(2));
-            product.setuserId(cursor.getString(3));
+            String deviceId="";
+            String url="";
+            String alias="";
+            String userId="";
+            while(!cursor.isAfterLast())
+            {
+                for(int i=0;i<cursor.getColumnCount();i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case PLUG_ID:
+                            deviceId= cursor.getString(i);
+                            break;
+                        case PLUG_URL:
+                            url = cursor.getString(i);
+                            break;
+                        case PLUG_ALIAS:
+                            alias = cursor.getString(i);
+                            break;
+                        case PLUG_USER:
+                            userId = cursor.getString(i);
+                            break;
+                    }
+                }
+                PlugItem product = new PlugItem(deviceId,url,alias,userId);
+                listData.add(product);
+                cursor.moveToNext();
+            }
         }
         else
-            product=null;
+            listData=null;
         cursor.close();
         db.close();
-        return product;
+        return listData;
     }
 
     public boolean existPlug(String productid)//

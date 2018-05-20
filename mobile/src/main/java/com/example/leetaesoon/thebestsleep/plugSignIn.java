@@ -246,8 +246,7 @@ public class plugSignIn extends Activity{
                     else{
                         JSONObject responseJSON2 = new JSONObject(responseJSON.get("result").toString());
                         token = (String)responseJSON2.get("token");
-                        Log.d("uuid","token : "+token);
-                        //여기서 userInfo Table에 추가하자.
+                        Log.d("off","token : "+token);
                         KasaInfo kasaInfo = new KasaInfo(user_email,token);
                         dbHandler.addPlugUser(kasaInfo);
                     }

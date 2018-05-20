@@ -23,9 +23,21 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Set;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends Activity{
 
@@ -70,6 +82,83 @@ public class MainActivity extends Activity{
         }
 
         //현재 id 값에 해당하는 DB에 저장된 모든 장치에 off 메세지 전송
+        ArrayList<PlugItem> plugItems = new ArrayList<>();
+        if(dbHandler.getPlugUserDB() != null)//사용중인 유저 ID가 DB에 있을 때.
+        {
+            if(dbHandler.selectPlugs(dbHandler.getPlugUserDB().get(0).getUserId()) != null)//현재 사용중인 유저가 등록한 장치가 DB에 저장되어 있으면.
+            {
+                plugItems.addAll(dbHandler.selectPlugs(dbHandler.getPlugUserDB().get(0).getUserId()));
+                for(final PlugItem pi : plugItems)
+                {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                URL url = new URL(pi.geturl()+"/?"+"token="+dbHandler.getPlugUserDB().get(0).getUserToken());
+
+                                JSONObject jsonObject1 = new JSONObject();
+                                jsonObject1.accumulate("deviceId", pi.getdeviceId());
+                                JSONObject content1 = new JSONObject();
+                                JSONObject content2 = new JSONObject();
+                                JSONObject content3 = new JSONObject();
+
+                                content1.accumulate("state",0);// off
+
+                                content2.accumulate("set_relay_state",content1);
+                                content3.accumulate("system",content2);
+
+                                jsonObject1.accumulate("requestData", ""+content3);
+
+
+
+                                JSONObject jsonObject2 = new JSONObject();
+                                jsonObject2.accumulate("method", "passthrough");
+                                jsonObject2.accumulate("params", jsonObject1);
+
+                                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+                                connection.setRequestMethod("POST");//POST message
+                                connection.setRequestProperty("Content-type", "application/json");
+                                connection.setDoOutput(true);
+                                connection.setDoInput(true);
+
+
+                                OutputStream outputStream = connection.getOutputStream();
+                                outputStream.write(jsonObject2.toString().getBytes());
+                                outputStream.flush();
+
+                                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)//
+                                {
+                                    InputStream inputStream = connection.getInputStream();
+                                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                                    byte[] byteBuffer = new byte[1024];
+                                    byte[] byteData = null;
+                                    int nLength = 0;
+                                    while ((nLength = inputStream.read(byteBuffer, 0, byteBuffer.length)) != -1) {
+                                        byteArrayOutputStream.write(byteBuffer, 0, nLength);
+                                    }
+                                    byteData = byteArrayOutputStream.toByteArray();
+                                    String response = new String(byteData);
+
+                                    JSONObject responseJSON1 = new JSONObject(response);
+                                    Log.d("off",responseJSON1.getString("msg"));
+                                }
+
+
+                            } catch (MalformedURLException e) {
+                                e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+
+                        }
+                    }).start();
+                }
+
+            }
+        }
 
         super.onBackPressed();
     }
