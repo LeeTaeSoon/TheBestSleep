@@ -15,6 +15,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.ExecutionException;
 
 public class SensorHandler implements SensorEventListener {
@@ -23,14 +25,19 @@ public class SensorHandler implements SensorEventListener {
 
     private Context context;
     MessageHandler messageHandler;
+    InnerStorageHandler innerStorageHandler;
 
     private SensorManager mSensorManager;
     private Sensor mHeartRateSensor;
     private Sensor mAccelerometerSensor;
     private Sensor mGyroscopeSensor;
 
+    Queue<String> queue = new LinkedList<String>();
+
     public SensorHandler(Context context) {
         this.context = context;
+
+        innerStorageHandler = new InnerStorageHandler(context);
 
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
@@ -49,7 +56,12 @@ public class SensorHandler implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        // 신뢰성없는 값은 무시
+        if (event.accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) return;
+
         String msg = "";
+        String separator = System.getProperty("line.separator");
+
         switch (event.sensor.getType()) {
             case Sensor.TYPE_HEART_RATE:
                 msg += "HeartRate : " + (int) event.values[0];
@@ -62,19 +74,26 @@ public class SensorHandler implements SensorEventListener {
                 msg += "Accelerometer : " + gX + " " + gY + " " + gZ;
                 break;
             case Sensor.TYPE_GYROSCOPE:
-                msg += "Gyroscope : " + (float) event.values[0] + " " + (float) event.values[1] + " " + (float) event.values[2];Log.d(TAG, "msg: " + msg);
+                msg += "Gyroscope : " + (float) event.values[0] + " " + (float) event.values[1] + " " + (float) event.values[2];
                 break;
         }
 
-        //Log.d(TAG, "msg: " + msg);
-
         if (msg.length() > 0) {
-            String separator = System.getProperty("line.separator");
-            writeToFile(currentTimeStr() + " " + msg + separator);
+            msg = currentTimeStr() + " " + msg + separator;
+            queue.offer(msg);
+
+            //Log.d(TAG, "msg: " + msg);
+            //Log.d(TAG, "Queue size is " + queue.size());
+            //innerStorageHandler.writeFile("sensor.txt", currentTimeStr() + " " + msg + separator, context.MODE_APPEND);
             //Log.d(TAG, "Write sensor data to file");
 
-            messageHandler.requestSendData((currentTimeStr() + " " + msg + separator).getBytes());
+            //messageHandler.requestSendData(msg.getBytes());
             //Log.d(TAG, "Request sending data");
+        }
+
+        if (queue.size() == 1000) {
+            Log.d(TAG, "Transfer queue datas");
+            transferData();
         }
     }
 
@@ -85,8 +104,8 @@ public class SensorHandler implements SensorEventListener {
 
     public void startMeasure() {
         boolean heartRateRegistered = mSensorManager.registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_FASTEST);
-        boolean accelerometerRegistered = mSensorManager.registerListener(this, mAccelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        boolean gyroscopeRegistered = mSensorManager.registerListener(this, mGyroscopeSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        boolean accelerometerRegistered = mSensorManager.registerListener(this, mAccelerometerSensor, 1000000, 1000000);
+        boolean gyroscopeRegistered = mSensorManager.registerListener(this, mGyroscopeSensor, 1000000, 1000000);
         Log.d("Sensor Status:", " Heart Rate registered: " + (heartRateRegistered ? "yes" : "no"));
         Log.d("Sensor Status:", " Accelerometer registered: " + (accelerometerRegistered ? "yes" : "no"));
         Log.d("Sensor Status:", " Gyroscope registered: " + (gyroscopeRegistered ? "yes" : "no"));
@@ -102,47 +121,13 @@ public class SensorHandler implements SensorEventListener {
         return df.format(c.getTime());
     }
 
-    private void writeToFile(String data) {
-        try {
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput("sensor.txt", Context.MODE_PRIVATE));
-            outputStreamWriter.write(data);
-            outputStreamWriter.close();
-        }
-        catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
-        }
-    }
+    private void transferData() {
+        Log.d(TAG, currentTimeStr() + "Transfer " + queue.size() + " datas");
 
-    private String readFromFile() {
-        Log.d(TAG, "Start read file");
-        String ret = "";
+        String data = "";
 
-        try {
-            InputStream inputStream = context.openFileInput("sensor.txt");
+        while (!queue.isEmpty()) data += queue.poll();
 
-            if ( inputStream != null ) {
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                String receiveString = "";
-                StringBuilder stringBuilder = new StringBuilder();
-
-                while ( (receiveString = bufferedReader.readLine()) != null ) {
-                    Log.d(TAG, "receiveString : " + receiveString);
-                    //stringBuilder.append(receiveString);
-                    //stringBuilder.append("\n");
-                }
-
-                inputStream.close();
-                ret = stringBuilder.toString();
-            }
-        }
-        catch (FileNotFoundException e) {
-            Log.e(TAG, "File not found: " + e.toString());
-        } catch (IOException e) {
-            Log.e(TAG, "Can not read file: " + e.toString());
-        }
-
-        Log.d(TAG, "End read file");
-        return ret;
+        messageHandler.requestSendData(data.getBytes());
     }
 }
