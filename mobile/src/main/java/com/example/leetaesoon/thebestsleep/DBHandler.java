@@ -25,6 +25,13 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     public static final String PLUG_USER_PASSWORD = "password";
     public static final String PLUG_USER_TOKEN = "token";
 
+    public static final String DATABASE_TABLE_PLUG = "plugs";
+    public static final String PLUG_ID = "Id";
+    public static final String PLUG_URL = "url";
+    public static final String PLUG_ALIAS = "alias";
+    public static final String PLUG_USER = "user";
+
+
     public static final String DATABASE_TABLE_LIGHT = "lights";
 
     public static final String DATABASE_TABLE_ACCELERATION = "acceleration";
@@ -60,10 +67,16 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
                 " text primary key, " + SPEAKER_NAME + " text)";
         db.execSQL(CREATE_SPEAKER_TABLE);// Speaker DB 생성.
 
-        //Plug DB 생성
+        //Plug DB 생성(Plug user)
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_PLUG_USER);
-        String CREATE_PLUG_TABLE = "create table if not exists  " + DATABASE_TABLE_PLUG_USER + "(" + PLUG_USER_ID +
+        String CREATE_PLUG_USER_TABLE = "create table if not exists  " + DATABASE_TABLE_PLUG_USER + "(" + PLUG_USER_ID +
                 " text primary key, " + PLUG_USER_TOKEN + " text)";
+        db.execSQL(CREATE_PLUG_USER_TABLE);
+
+        //Plug DB 생성(Plug)
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_PLUG);
+        String CREATE_PLUG_TABLE = "create table if not exists  " + DATABASE_TABLE_PLUG + "(" + PLUG_ID +
+                " text primary key, " + PLUG_URL + " text, "+ PLUG_ALIAS+" text, "+ PLUG_USER + " text)";
         db.execSQL(CREATE_PLUG_TABLE);
 
         //Light DB 생성
@@ -91,6 +104,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_SPEAKER);
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_PLUG_USER);
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_PLUG);
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_ACCELERATION);
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_GYRO);
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_HEARTRATE);
@@ -210,6 +224,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         return listData;
     }
 
+    //Plug DB(USER)
     public void addPlugUser(KasaInfo product){//plug DB에 새로운 user를 추가하는 부분.
 
         ContentValues value = new ContentValues();
@@ -300,6 +315,134 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         return listData;
     }
 
+    //Plug DB(Device)
+    public void addPlug(PlugItem product){//설정 시 DB 추가
+
+        ContentValues value = new ContentValues();
+        value.put(PLUG_ID,product.getdeviceId());
+        value.put(PLUG_URL,product.geturl());
+        value.put(PLUG_ALIAS,product.getalias());
+        value.put(PLUG_USER,product.getuserId());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(DATABASE_TABLE_PLUG,null,value);
+        db.close();
+    }
+
+    public boolean deletePlug(String productid)//해제 시 delete.
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT * FROM "+DATABASE_TABLE_PLUG+" where "+PLUG_ID
+                +"=\'"+productid+"\'";
+        Cursor cursor = db.rawQuery(query,null);
+
+        if(cursor.moveToFirst())
+        {
+            db.delete(DATABASE_TABLE_PLUG,PLUG_ID+"=?",new String[]{cursor.getString(0)});
+            //Toast.makeText(m_context,cursor.getString(0),Toast.LENGTH_SHORT).show();
+            cursor.close();
+            db.close();
+            return true;
+        }
+        db.close();
+        return false;
+    }
+
+    public PlugItem selectPlug(String productid)//
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_PLUG+" WHERE "
+                +PLUG_USER+"=\'"+productid+"\'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+
+        PlugItem product = new PlugItem();
+
+        if(cursor.moveToFirst())
+        {
+            product.setdeviceId(cursor.getString(0));
+            product.seturl(cursor.getString(1));
+            product.setalias(cursor.getString(2));
+            product.setuserId(cursor.getString(3));
+        }
+        else
+            product=null;
+        cursor.close();
+        db.close();
+        return product;
+    }
+
+    public boolean existPlug(String productid)//
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_PLUG+" WHERE "
+                +PLUG_ID+"=\'"+productid+"\'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+
+        PlugItem product = new PlugItem();
+
+        if(cursor.getCount()<=0)
+        {
+            cursor.close();
+            db.close();
+            return false;
+        }
+        else{
+            cursor.close();
+            db.close();
+            return true;
+        }
+    }
+
+    public ArrayList<PlugItem> getPlugDB()
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_PLUG;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+        ArrayList<PlugItem> listData = new ArrayList<>();
+
+        if(cursor.moveToFirst())
+        {
+            String deviceId="";
+            String url="";
+            String alias="";
+            String userId="";
+
+            while(!cursor.isAfterLast())
+            {
+                for(int i=0;i<cursor.getColumnCount();i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case PLUG_ID:
+                            deviceId= cursor.getString(i);
+                            break;
+                        case PLUG_URL:
+                            url = cursor.getString(i);
+                            break;
+                        case PLUG_ALIAS:
+                            alias = cursor.getString(i);
+                            break;
+                        case PLUG_USER:
+                            userId = cursor.getString(i);
+                            break;
+                    }
+                }
+
+                PlugItem product = new PlugItem(deviceId,url,alias,userId);
+                listData.add(product);
+                cursor.moveToNext();
+            }
+        }
+        else
+        {
+            listData = null;
+        }
+        cursor.close();
+        db.close();
+        return listData;
+    }
+
+    //가속도 DB
     public void addAcceleration(Acceleration product){//가속도 값 DB에 추가.
 
         ContentValues value = new ContentValues();
