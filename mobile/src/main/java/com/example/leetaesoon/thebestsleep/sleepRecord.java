@@ -5,6 +5,8 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
@@ -15,28 +17,50 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 public class sleepRecord extends Activity {
 
     LineChart lineChart;
     LineData lineData;
+    List<Entry> entries;
+    List<Entry> e;
+    SimpleDateFormat simpleDateFormat;
+    float x_axis;
+    int list_index = 0;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sleep_record);
-
+        x_axis = 0;
         lineChart = (LineChart)findViewById(R.id.chart1);
         Random random = new Random();
-        List<Entry> entries = new ArrayList<>();
-        for(int i = 0; i<20; i++){
-            float num = random.nextFloat()*100;
-            entries.add(new Entry(i,num));
+        entries = new ArrayList<>();
+        readFile();
+        drawGraph();
+        Log.v("testing","aaaaaaaaaaaaaaaaaaaaaa");
+    }
+    public void drawGraph() {
+        if(list_index == entries.size()-1){
+            Toast.makeText(getApplicationContext(),"데이터가 없습니다",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (list_index < entries.size() - 5000){
+            e = new ArrayList<>(entries.subList(list_index, list_index + 5000));
+            list_index += 5000;
+        }
+        else {
+            e = new ArrayList<>(entries.subList(list_index, entries.size() - 1));
+            list_index = entries.size() -1;
         }
 
-        LineDataSet lineDataSet = new LineDataSet(entries, "시간");
+
+        LineDataSet lineDataSet = new LineDataSet(e, "시간");
         lineDataSet.setLineWidth(2);
         lineDataSet.setCircleRadius(6);
         lineDataSet.setCircleColor(Color.parseColor("#FFA1B4DC"));
@@ -73,6 +97,35 @@ public class sleepRecord extends Activity {
         lineChart.setDescription(description);
         lineChart.animateY(2000, Easing.EasingOption.EaseInCubic);
         lineChart.invalidate();
-        Log.v("testing","aaaaaaaaaaaaaaaaaaaaaa");
+    }
+    public void readFile(){
+        float x=0,y=0,z=0;
+        double sum = 0;
+        Scanner scan = new Scanner(
+                getResources().openRawResource(R.raw.sensor)
+        );
+        while(scan.hasNextLine()){
+            String str1 = scan.nextLine();
+            String[] s = str1.split(" ");
+            Log.v("s_length",""+s.length);
+            //simpleDateFormat = new SimpleDateFormat("HH:mm:ss").parse(s[0]);
+            Log.v("datetime",s[0]);
+            if(s.length > 1) {
+                switch (s[1]) {
+                    case "Accelerometer":
+                        x = Float.parseFloat(s[3]);
+                        y = Float.parseFloat(s[4]);
+                        z = Float.parseFloat(s[5]);
+                        sum = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+                        entries.add(new Entry(x_axis++, (float) sum));
+                        break;
+                }
+            }
+        }
+        scan.close();
+    }
+
+    public void refresh(View view) {
+        drawGraph();
     }
 }
