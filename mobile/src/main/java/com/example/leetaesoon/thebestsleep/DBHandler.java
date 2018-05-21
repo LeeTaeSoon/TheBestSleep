@@ -44,6 +44,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     public static final String DATABASE_TABLE_HEARTRATE = "heartRate";
     public static final String HEARTRATE_ID = "id";
     public static final String HEARTRATE_RATE = "rate";
+    public static final String HEARTRATE_TIME = "time";
 
 
 
@@ -83,7 +84,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         //심박수
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_HEARTRATE);
         String CREATE_HEARTRATE_TABLE = "create table if not exists  " + DATABASE_TABLE_HEARTRATE + "(" + HEARTRATE_ID+
-                " integer primary key autoincrement, " + HEARTRATE_RATE +" integer)";
+                " integer primary key autoincrement, "+ HEARTRATE_TIME+" text, " + HEARTRATE_RATE +" integer)";
         db.execSQL(CREATE_HEARTRATE_TABLE);
     }
 
@@ -441,7 +442,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
 
         ContentValues value = new ContentValues();
         value.put(HEARTRATE_RATE,product.getHeartRateRate());
-
+        value.put(HEARTRATE_TIME,product.getHeartRatetime());
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(DATABASE_TABLE_HEARTRATE,null,value);
         db.close();
@@ -457,7 +458,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         if(cursor.moveToFirst())
         {
             int rate=0;
-
+            String time = "";
             while(!cursor.isAfterLast())
             {
                 for(int i=0;i<cursor.getColumnCount();i++)
@@ -467,10 +468,13 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
                         case HEARTRATE_RATE:
                             rate = cursor.getInt(i);
                             break;
+                        case HEARTRATE_TIME:
+                            time = cursor.getString(i);
+                            break;
                     }
                 }
 
-                HeartRate product = new HeartRate(rate);
+                HeartRate product = new HeartRate(rate, time);
                 listData.add(product);
                 cursor.moveToNext();
             }
