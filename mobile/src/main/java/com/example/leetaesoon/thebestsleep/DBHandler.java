@@ -74,17 +74,17 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         //가속도
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_ACCELERATION);
         String CREATE_ACCELERATION_TABLE = "create table if not exists  " + DATABASE_TABLE_ACCELERATION + "(" + ACCELERATION_ID+
-                " integer primary key autoincrement, " + ACCELERATION_TIME +" text, "+ ACCELERATION_X +" real, "+ ACCELERATION_Y + " real, "+ ACCELERATION_Z +" real)";
+                " integer primary key autoincrement, " + ACCELERATION_TIME +" integer, "+ ACCELERATION_X +" real, "+ ACCELERATION_Y + " real, "+ ACCELERATION_Z +" real)";
         db.execSQL(CREATE_ACCELERATION_TABLE);
         //자이로
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_GYRO);
         String CREATE_GYRO_TABLE = "create table if not exists  " + DATABASE_TABLE_GYRO + "(" + GYRO_ID+
-                " integer primary key autoincrement, " + GYRO_TIME +" text, "+ GYRO_X +" real, "+ GYRO_Y + " real, "+ GYRO_Z +" real)";
+                " integer primary key autoincrement, " + GYRO_TIME +" integer, "+ GYRO_X +" real, "+ GYRO_Y + " real, "+ GYRO_Z +" real)";
         db.execSQL(CREATE_GYRO_TABLE);
         //심박수
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_HEARTRATE);
         String CREATE_HEARTRATE_TABLE = "create table if not exists  " + DATABASE_TABLE_HEARTRATE + "(" + HEARTRATE_ID+
-                " integer primary key autoincrement, "+ HEARTRATE_TIME+" text, " + HEARTRATE_RATE +" integer)";
+                " integer primary key autoincrement, "+ HEARTRATE_TIME+" integer, " + HEARTRATE_RATE +" integer)";
         db.execSQL(CREATE_HEARTRATE_TABLE);
     }
 
@@ -314,6 +314,24 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         db.close();
     }
 
+    public void addAllAcceleration(ArrayList<Acceleration> products) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            for (int i = 0; i < products.size(); i++) {
+                ContentValues value = new ContentValues();
+                value.put(ACCELERATION_TIME,products.get(i).getAccelerationTime());
+                value.put(ACCELERATION_X,products.get(i).getAccelerationX());
+                value.put(ACCELERATION_Y,products.get(i).getAccelerationY());
+                value.put(ACCELERATION_Z,products.get(i).getAccelerationZ());
+                db.insert(DATABASE_TABLE_ACCELERATION, null, value);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
     public ArrayList<Acceleration> getAccelerationDB()// 가속도 DB 전체 가져오기.
     {
         String query = "SELECT * FROM "+DATABASE_TABLE_ACCELERATION;
@@ -323,7 +341,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
 
         if(cursor.moveToFirst())
         {
-            String time="";
+            long time = 0;
             double x = 0;
             double y = 0;
             double z = 0;
@@ -335,7 +353,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
                     switch (cursor.getColumnName(i))
                     {
                         case ACCELERATION_TIME:
-                            time = cursor.getString(i);
+                            time = cursor.getLong(i);
                             break;
                         case ACCELERATION_X:
                             x = cursor.getDouble(i);
@@ -392,7 +410,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
 
         if(cursor.moveToFirst())
         {
-            String time="";
+            long time = 0;
             double x = 0;
             double y = 0;
             double z = 0;
@@ -404,7 +422,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
                     switch (cursor.getColumnName(i))
                     {
                         case GYRO_TIME:
-                            time = cursor.getString(i);
+                            time = cursor.getLong(i);
                             break;
                         case GYRO_X:
                             x = cursor.getDouble(i);
@@ -441,11 +459,27 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     public void addHeartRate(HeartRate product){//심박수 값 DB에 추가.
 
         ContentValues value = new ContentValues();
-        value.put(HEARTRATE_RATE,product.getHeartRateRate());
         value.put(HEARTRATE_TIME,product.getHeartRatetime());
+        value.put(HEARTRATE_RATE,product.getHeartRateRate());
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(DATABASE_TABLE_HEARTRATE,null,value);
         db.close();
+    }
+
+    public void addAllHeartRate(ArrayList<HeartRate> products) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            for (int i = 0; i < products.size(); i++) {
+                ContentValues value = new ContentValues();
+                value.put(HEARTRATE_TIME, products.get(i).getHeartRatetime());
+                value.put(HEARTRATE_RATE, products.get(i).getHeartRateRate());
+                db.insert(DATABASE_TABLE_HEARTRATE, null, value);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     public ArrayList<HeartRate> getHeartRateDB()//심박수 DB 전체 가져오기.
@@ -457,8 +491,8 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
 
         if(cursor.moveToFirst())
         {
-            int rate=0;
-            String time = "";
+            int rate = 0;
+            long time = 0;
             while(!cursor.isAfterLast())
             {
                 for(int i=0;i<cursor.getColumnCount();i++)
@@ -469,7 +503,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
                             rate = cursor.getInt(i);
                             break;
                         case HEARTRATE_TIME:
-                            time = cursor.getString(i);
+                            time = cursor.getLong(i);
                             break;
                     }
                 }
