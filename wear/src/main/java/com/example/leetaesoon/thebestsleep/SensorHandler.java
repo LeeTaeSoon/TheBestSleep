@@ -7,14 +7,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ExecutionException;
@@ -30,7 +25,7 @@ public class SensorHandler implements SensorEventListener {
     private SensorManager mSensorManager;
     private Sensor mHeartRateSensor;
     private Sensor mAccelerometerSensor;
-    private Sensor mGyroscopeSensor;
+    //private Sensor mGyroscopeSensor;
 
     Queue<String> queue = new LinkedList<String>();
 
@@ -42,7 +37,7 @@ public class SensorHandler implements SensorEventListener {
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
         mAccelerometerSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mGyroscopeSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        //mGyroscopeSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
         try {
             Log.d(TAG, "Create messageHandler object");
@@ -73,22 +68,18 @@ public class SensorHandler implements SensorEventListener {
 
                 msg += "Accelerometer : " + gX + " " + gY + " " + gZ;
                 break;
-            case Sensor.TYPE_GYROSCOPE:
-                msg += "Gyroscope : " + (float) event.values[0] + " " + (float) event.values[1] + " " + (float) event.values[2];
-                break;
+//            case Sensor.TYPE_GYROSCOPE:
+//                msg += "Gyroscope : " + (float) event.values[0] + " " + (float) event.values[1] + " " + (float) event.values[2];
+//                break;
         }
 
         if (msg.length() > 0) {
-            msg = currentTimeStr() + " " + msg + separator;
+            msg = currentTime() + " " + msg + separator;
             queue.offer(msg);
 
             //Log.d(TAG, "msg: " + msg);
-            //Log.d(TAG, "Queue size is " + queue.size());
             //innerStorageHandler.writeFile("sensor.txt", currentTimeStr() + " " + msg + separator, context.MODE_APPEND);
             //Log.d(TAG, "Write sensor data to file");
-
-            //messageHandler.requestSendData(msg.getBytes());
-            //Log.d(TAG, "Request sending data");
         }
 
         if (queue.size() == 1000) {
@@ -105,10 +96,10 @@ public class SensorHandler implements SensorEventListener {
     public void startMeasure() {
         boolean heartRateRegistered = mSensorManager.registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_FASTEST);
         boolean accelerometerRegistered = mSensorManager.registerListener(this, mAccelerometerSensor, 1000000, 1000000);
-        boolean gyroscopeRegistered = mSensorManager.registerListener(this, mGyroscopeSensor, 1000000, 1000000);
+        //boolean gyroscopeRegistered = mSensorManager.registerListener(this, mGyroscopeSensor, 1000000, 1000000);
         Log.d("Sensor Status:", " Heart Rate registered: " + (heartRateRegistered ? "yes" : "no"));
         Log.d("Sensor Status:", " Accelerometer registered: " + (accelerometerRegistered ? "yes" : "no"));
-        Log.d("Sensor Status:", " Gyroscope registered: " + (gyroscopeRegistered ? "yes" : "no"));
+        //Log.d("Sensor Status:", " Gyroscope registered: " + (gyroscopeRegistered ? "yes" : "no"));
     }
 
     public void stopMeasure() {
@@ -121,8 +112,13 @@ public class SensorHandler implements SensorEventListener {
         return df.format(c.getTime());
     }
 
+    private long currentTime() {
+        Date date = new Date();
+        return date.getTime();
+    }
+
     private void transferData() {
-        Log.d(TAG, currentTimeStr() + "Transfer " + queue.size() + " datas");
+        Log.d(TAG, currentTimeStr() + " Transfer " + queue.size() + " datas");
 
         String data = "";
 
