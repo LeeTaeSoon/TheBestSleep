@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ProgressBar;
 
 import com.philips.lighting.hue.sdk.PHAccessPoint;
@@ -45,7 +46,9 @@ public class PHPushlinkActivity extends Activity {
     @Override
     protected void onStop(){
         super.onStop();
+        Log.d("last","stop");
         phHueSDK.getNotificationManager().unregisterSDKListener(listener);
+        finish();
     }
 
     public void incrementProgress() {
@@ -111,6 +114,7 @@ public class PHPushlinkActivity extends Activity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d("last","destroy");
         if (listener !=null) {
             phHueSDK.getNotificationManager().unregisterSDKListener(listener);
         }

@@ -52,8 +52,17 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     public static final String HEARTRATE_ID = "id";
     public static final String HEARTRATE_RATE = "rate";
 
+    public static final String DATABASE_TABLE_LAMP_BRIDGE = "lampBridge";
+    public static final String LAMP_BRIDGE_USERNAME = "username";
+    public static final String LAMP_BRIDGE_IP = "ip";
 
-
+    public static final String DATABASE_TABLE_LAMP = "lamps";
+    public static final String LAMP_ID ="id";
+    public static final String LAMP_NAME="name";
+    public static final String LAMP_R="R";
+    public static final String LAMP_G="G";
+    public static final String LAMP_B="B";
+    public static final String LAMP_A="A";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, DATABASE_NAME, factory, version);
@@ -98,6 +107,18 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         String CREATE_HEARTRATE_TABLE = "create table if not exists  " + DATABASE_TABLE_HEARTRATE + "(" + HEARTRATE_ID+
                 " integer primary key autoincrement, " + HEARTRATE_RATE +" integer)";
         db.execSQL(CREATE_HEARTRATE_TABLE);
+
+        //조명 Bridge.
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_LAMP_BRIDGE);
+        String CREATE_LAMP_BRIDGE_TABLE = "create table if not exists  " + DATABASE_TABLE_LAMP_BRIDGE + "(" + LAMP_BRIDGE_USERNAME+
+                " text primary key, " + LAMP_BRIDGE_IP +" text)";
+        db.execSQL(CREATE_LAMP_BRIDGE_TABLE);
+
+        //조명
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_LAMP);
+        String CREATE_LAMP_TABLE = "create table if not exists  " + DATABASE_TABLE_LAMP + "(" + LAMP_ID+
+                " text primary key, " + LAMP_NAME +" text, "+ LAMP_R +" integer, "+LAMP_G +" integer, "+LAMP_B +" integer, "+LAMP_A +" integer)";
+        db.execSQL(CREATE_LAMP_TABLE);
     }
 
     @Override
@@ -108,6 +129,8 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_ACCELERATION);
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_GYRO);
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_HEARTRATE);
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_LAMP_BRIDGE);
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_LAMP);
         onCreate(db);
     }
 
@@ -654,4 +677,131 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(DATABASE_TABLE_HEARTRATE,null,null);
     }
+
+
+
+    //Lamp Bridge
+    public void addLampBridge(LampBridgeItem product){//심박수 값 DB에 추가.
+
+        ContentValues value = new ContentValues();
+        value.put(LAMP_BRIDGE_USERNAME,product.getUserName());
+        value.put(LAMP_BRIDGE_IP,product.getIp());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(DATABASE_TABLE_LAMP_BRIDGE,null,value);
+        db.close();
+    }
+    public ArrayList<LampBridgeItem> getLampBridgeDB()//심박수 DB 전체 가져오기.
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_LAMP_BRIDGE;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+        ArrayList<LampBridgeItem> listData = new ArrayList<>();
+
+        if(cursor.moveToFirst())
+        {
+            String username="";
+            String ip="";
+            while(!cursor.isAfterLast())
+            {
+                for(int i=0;i<cursor.getColumnCount();i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case LAMP_BRIDGE_USERNAME:
+                            username = cursor.getString(i);
+                            break;
+                        case LAMP_BRIDGE_IP:
+                            ip = cursor.getString(i);
+                            break;
+                    }
+                }
+
+                LampBridgeItem product = new LampBridgeItem(username,ip);
+                listData.add(product);
+                cursor.moveToNext();
+            }
+        }
+        else
+        {
+            listData = null;
+        }
+        cursor.close();
+        db.close();
+        return listData;
+    }
+
+    public LampBridgeItem selectLampBridge(String productName)//id를 통해 검색
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_LAMP_BRIDGE+" WHERE "
+                +LAMP_BRIDGE_USERNAME+"=\'"+productName+"\'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+
+        LampBridgeItem product = new LampBridgeItem();
+
+        if(cursor.moveToFirst())
+        {
+            product.setUserName(cursor.getString(0));
+            product.setIp(cursor.getString(1));
+        }
+        else
+            product=null;
+        cursor.close();
+        db.close();
+        return product;
+    }
+
+    public void deleteLampBridgeDB(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(DATABASE_TABLE_LAMP_BRIDGE,null,null);
+    }
+
+    // LAMP
+    public void addLamp(LampItem product){//심박수 값 DB에 추가.
+
+        ContentValues value = new ContentValues();
+        value.put(LAMP_ID,product.getDeviceID());
+        value.put(LAMP_NAME,product.getLampName());
+        value.put(LAMP_R,product.getLampR());
+        value.put(LAMP_G,product.getLampG());
+        value.put(LAMP_B,product.getLampB());
+        value.put(LAMP_A,product.getLampA());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(DATABASE_TABLE_LAMP,null,value);
+        db.close();
+    }
+
+    public LampItem selectLamp(String productName)//id를 통해 검색
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_LAMP+" WHERE "
+                +LAMP_ID+"=\'"+productName+"\'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+
+        LampItem product = new LampItem();
+
+        if(cursor.moveToFirst())
+        {
+            product.setDeviceID(cursor.getString(0));
+            product.setLampName(cursor.getString(1));
+            product.setLampR(cursor.getInt(2));
+            product.setLampG(cursor.getInt(3));
+            product.setLampB(cursor.getInt(4));
+            product.setLampA(cursor.getInt(5));
+            product.setLampControl(true);
+        }
+        else
+            product=null;
+        cursor.close();
+        db.close();
+        return product;
+    }
+
+    public void deleteLampDB(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(DATABASE_TABLE_LAMP,null,null);
+    }
+
 }

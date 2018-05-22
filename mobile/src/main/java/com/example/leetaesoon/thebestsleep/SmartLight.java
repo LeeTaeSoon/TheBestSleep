@@ -1,20 +1,26 @@
 package com.example.leetaesoon.thebestsleep;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import com.philips.lighting.hue.listener.PHLightListener;
+import com.philips.lighting.hue.sdk.PHAccessPoint;
+import com.philips.lighting.hue.sdk.PHBridgeSearchManager;
 import com.philips.lighting.hue.sdk.PHHueSDK;
+import com.philips.lighting.hue.sdk.PHSDKListener;
 import com.philips.lighting.hue.sdk.utilities.PHUtilities;
 import com.philips.lighting.model.PHBridge;
 import com.philips.lighting.model.PHBridgeResource;
 import com.philips.lighting.model.PHHueError;
+import com.philips.lighting.model.PHHueParsingError;
 import com.philips.lighting.model.PHLight;
 import com.philips.lighting.model.PHLightState;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -22,13 +28,26 @@ import java.util.Random;
 public class SmartLight extends Activity {
 
     PHHueSDK phHueSDK;
+    Button fb;
+
     static final int MAX_HUE=65535;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_smart_light);
+        fb = (Button)findViewById(R.id.btnFindBridge);
+        fb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent returnIntent = new Intent();
+                returnIntent.getIntExtra("result",0);
+                setResult(RESULT_OK,returnIntent);
+                finish();
+            }
+        });
 
         phHueSDK = PHHueSDK.create();
+
         Button randomButton;
         randomButton = (Button) findViewById(R.id.buttonRand);
         randomButton.setOnClickListener(new View.OnClickListener() {
@@ -55,8 +74,9 @@ public class SmartLight extends Activity {
 //            lightState.setHue(rand.nextInt(MAX_HUE));
 //            lightState.setHue(k);
             float xy[] = PHUtilities.calculateXYFromRGB(255,0,0,light.getModelNumber());
-            lightState.setX(xy[0]);
-            lightState.setY(xy[1]);
+//            lightState.setX(xy[0]);
+//            lightState.setY(xy[1]);
+            lightState.setOn(false);
 
             //            lightState.setSaturation();
             // To validate your lightstate is valid (before sending to the bridge) you can use:
@@ -65,6 +85,7 @@ public class SmartLight extends Activity {
             //  bridge.updateLightState(light, lightState);   // If no bridge response is required then use this simpler form.
         }
     }
+
 
     PHLightListener listener = new PHLightListener() {
 

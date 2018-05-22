@@ -11,7 +11,6 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -22,17 +21,23 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".SmartPlug">
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            <!--</intent-filter>-->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
+
+
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
         </activity>
         <activity
             android:name=".MainActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <activity android:name=".SpeakerSelect" android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <activity android:name=".BluetoothSpeaker" android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity
+            android:name=".SpeakerSelect"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".BluetoothSpeaker"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".SplashActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar">
@@ -42,16 +47,15 @@
              <category android:name="android.intent.category.LAUNCHER" />
              </intent-filter>
         </activity>
-
-        <activity android:name=".SmartLight" >
-        </activity>
+        <activity android:name=".SmartLight"></activity>
         <activity android:name=".PHHomeActivity">
             <!--<intent-filter>-->
                 <!--<action android:name="android.intent.action.MAIN" />-->
+
                 <!--<category android:name="android.intent.category.LAUNCHER" />-->
             <!--</intent-filter>-->
         </activity>
-
+        <activity android:name=".PHPushlinkActivity" />
         <activity
             android:name=".LampSelect"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
@@ -64,18 +68,25 @@
         <activity
             android:name=".PlugList"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <activity android:name=".LampColorSetting"
-            android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
-        <service android:name=".MessageListener" >
+        <activity
+            android:name=".LampColorSetting"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+
+        <service android:name=".MessageListener">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.DATA_CHANGED" />
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
                 <action android:name="com.google.android.gms.wearable.CAPABILITY_CHANGED" />
                 <action android:name="com.google.android.gms.wearable.CHANNEL_EVENT" />
-                <data android:scheme="wear" android:host="*" />
+
+                <data
+                    android:host="*"
+                    android:scheme="wear" />
             </intent-filter>
         </service>
 
+        <activity android:name=".LampBridge"
+            android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
     </application>
 
 </manifest>
