@@ -56,7 +56,7 @@ public class ListViewAdapter extends ArrayAdapter<PairedDevice> {
             imageButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Log.v("aaaaaaaa","bbbbbbbbbbb"+position);
+//                    Log.v("aaaaaaaa","bbbbbbbbbbb"+position);
                     dbHandler.deleteSpeaker(m_listData.get(position).getAddress());
                     m_listData.remove(position);
                     notifyDataSetChanged();

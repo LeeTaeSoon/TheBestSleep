@@ -55,9 +55,28 @@ public class plugSignIn extends Activity{
             ArrayList<KasaInfo> listData = new ArrayList<>();
             listData.addAll(dbHandler.getPlugUserDB());
             i.putExtra("email",listData.get(0).getUserId());
-            startActivity(i);
+//            startActivity(i);
+            startActivityForResult(i,100);
+
         }
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode ==RESULT_OK)
+        {
+            if(requestCode==100)
+            {
+                boolean check = data.getBooleanExtra("result",false);
+                Log.d("back","result : "+check);
+                if(check)//뒤로가기를 했다면 메인화면으로 가도록.
+                {
+                    finish();
+                }
+            }
+        }
     }
 
     public void KasaLogin(View view) {
@@ -124,7 +143,7 @@ public class plugSignIn extends Activity{
 //            i.putExtra("password",user_pass);
                 mEmail.setText("");
                 mPassword.setText("");
-                startActivity(i);
+                startActivityForResult(i,100);
             }
 
 
@@ -227,8 +246,7 @@ public class plugSignIn extends Activity{
                     else{
                         JSONObject responseJSON2 = new JSONObject(responseJSON.get("result").toString());
                         token = (String)responseJSON2.get("token");
-                        Log.d("uuid","token : "+token);
-                        //여기서 userInfo Table에 추가하자.
+                        Log.d("off","token : "+token);
                         KasaInfo kasaInfo = new KasaInfo(user_email,token);
                         dbHandler.addPlugUser(kasaInfo);
                     }

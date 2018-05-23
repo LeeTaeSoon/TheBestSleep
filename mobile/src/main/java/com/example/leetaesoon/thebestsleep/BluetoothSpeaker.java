@@ -5,8 +5,10 @@ import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +19,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.Serializable;
@@ -35,6 +38,7 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
     Intent intent;
     ListViewAdapter listViewAdapter_Speaker;
     DBHandler dbHandler;
+    TextView textView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +60,15 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
         listView_Speaker.setAdapter(listViewAdapter_Speaker);
         Switch bluetoothSwitch = (Switch)findViewById(R.id.bluetoothSwitch);//볼륨 스위치
         speakerPlus = (ImageButton)findViewById(R.id.speakerPlus);
+
+        textView = (TextView)findViewById(R.id.connected_device);
+
+        //블루투스가 연결되거나 해제되는 이벤트가 발생했을 때.
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED);
+        registerReceiver(bluetoothReceiver, filter);
+        filter = new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        registerReceiver(bluetoothReceiver, filter);
+
 
         getConnectedDevice();
 
@@ -107,6 +120,24 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
             }
         });
     }
+    //
+    BroadcastReceiver bluetoothReceiver = new BroadcastReceiver(){
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction(); //연결된 장치를 intent를 통하여 가져온다.
+            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE); //장치가 연결이 되었으면
+            if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+                textView.setText("Now Connected : "+device.getName().toString());
+                Log.d("TEST", device.getName().toString() +" Device Is Connected!"); //장치의 연결이 끊기면
+             }
+             else if(BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)){
+                textView.setText("Now Connected : ");
+                Log.d("TEST", device.getName().toString() +" Device Is DISConnected!");
+            }
+        }
+    };
+
+
+    //
 
     public void getConnectedDevice()
     {
@@ -132,9 +163,15 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
     private BluetoothProfile.ServiceListener serviceListener = new BluetoothProfile.ServiceListener() {
         @Override
         public void onServiceConnected(int profile, BluetoothProfile proxy) {
-            BluetoothDevice device = proxy.getConnectedDevices().get(0);
-            Toast.makeText(getBaseContext(),"Connected Device : "+ device.getName().toString() ,Toast.LENGTH_SHORT).show();
-//            Log.d("Connect",device.getName().toString()+"is Connected Svlistener");
+            Log.d("Connect","connect!!!!!");
+            if(proxy.getConnectedDevices().isEmpty() == false)
+            {
+                BluetoothDevice device = proxy.getConnectedDevices().get(0);
+                textView.setText("Now Connected : "+device.getName().toString());
+                Toast.makeText(getBaseContext(),"Connected Device : "+ device.getName().toString() ,Toast.LENGTH_SHORT).show();
+                Log.d("Connect",device.getName().toString()+"is Connected Svlistener");
+            }
+
         }
         @Override
         public void onServiceDisconnected(int profile) {
@@ -144,8 +181,9 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
 
     @Override
     protected void onDestroy() {
+        Log.d("Connect","Distroy");
         m_BtAdapter.closeProfileProxy(BluetoothProfile.A2DP, m_A2dpService);
-//        unregisterReceiver(m_Receiver);//이거 안해주면 백그라운드에서 계속 프로그램이 돈다.
+        unregisterReceiver(bluetoothReceiver);//이거 안해주면 백그라운드에서 계속 프로그램이 돈다.
         super.onDestroy();
     }
 

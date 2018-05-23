@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="15dp"
-            android:text="DeviceID"
+            android:text=""
             />
 
         <TextView
@@ -36,10 +36,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="15dp"
-            android:text="MAC addr"
+            android:text=""
             />
         </LinearLayout>
         <ToggleButton
+            android:id="@+id/btnControl"
             android:layout_gravity="center_vertical"
             android:layout_width="50dp"
             android:layout_height="25dp"

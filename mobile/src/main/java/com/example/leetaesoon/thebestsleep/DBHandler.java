@@ -25,6 +25,13 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     public static final String PLUG_USER_PASSWORD = "password";
     public static final String PLUG_USER_TOKEN = "token";
 
+    public static final String DATABASE_TABLE_PLUG = "plugs";
+    public static final String PLUG_ID = "Id";
+    public static final String PLUG_URL = "url";
+    public static final String PLUG_ALIAS = "alias";
+    public static final String PLUG_USER = "user";
+
+
     public static final String DATABASE_TABLE_LIGHT = "lights";
 
     public static final String DATABASE_TABLE_ACCELERATION = "acceleration";
@@ -46,8 +53,17 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     public static final String HEARTRATE_RATE = "rate";
     public static final String HEARTRATE_TIME = "time";
 
+    public static final String DATABASE_TABLE_LAMP_BRIDGE = "lampBridge";
+    public static final String LAMP_BRIDGE_USERNAME = "username";
+    public static final String LAMP_BRIDGE_IP = "ip";
 
-
+    public static final String DATABASE_TABLE_LAMP = "lamps";
+    public static final String LAMP_ID ="id";
+    public static final String LAMP_NAME="name";
+    public static final String LAMP_R="R";
+    public static final String LAMP_G="G";
+    public static final String LAMP_B="B";
+    public static final String LAMP_A="A";
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, DATABASE_NAME, factory, version);
@@ -61,10 +77,16 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
                 " text primary key, " + SPEAKER_NAME + " text)";
         db.execSQL(CREATE_SPEAKER_TABLE);// Speaker DB 생성.
 
-        //Plug DB 생성
+        //Plug DB 생성(Plug user)
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_PLUG_USER);
-        String CREATE_PLUG_TABLE = "create table if not exists  " + DATABASE_TABLE_PLUG_USER + "(" + PLUG_USER_ID +
+        String CREATE_PLUG_USER_TABLE = "create table if not exists  " + DATABASE_TABLE_PLUG_USER + "(" + PLUG_USER_ID +
                 " text primary key, " + PLUG_USER_TOKEN + " text)";
+        db.execSQL(CREATE_PLUG_USER_TABLE);
+
+        //Plug DB 생성(Plug)
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_PLUG);
+        String CREATE_PLUG_TABLE = "create table if not exists  " + DATABASE_TABLE_PLUG + "(" + PLUG_ID +
+                " text primary key, " + PLUG_URL + " text, "+ PLUG_ALIAS+" text, "+ PLUG_USER + " text)";
         db.execSQL(CREATE_PLUG_TABLE);
 
         //Light DB 생성
@@ -86,15 +108,30 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         String CREATE_HEARTRATE_TABLE = "create table if not exists  " + DATABASE_TABLE_HEARTRATE + "(" + HEARTRATE_ID+
                 " integer primary key autoincrement, "+ HEARTRATE_TIME+" integer, " + HEARTRATE_RATE +" integer)";
         db.execSQL(CREATE_HEARTRATE_TABLE);
+
+        //조명 Bridge.
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_LAMP_BRIDGE);
+        String CREATE_LAMP_BRIDGE_TABLE = "create table if not exists  " + DATABASE_TABLE_LAMP_BRIDGE + "(" + LAMP_BRIDGE_USERNAME+
+                " text primary key, " + LAMP_BRIDGE_IP +" text)";
+        db.execSQL(CREATE_LAMP_BRIDGE_TABLE);
+
+        //조명
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_LAMP);
+        String CREATE_LAMP_TABLE = "create table if not exists  " + DATABASE_TABLE_LAMP + "(" + LAMP_ID+
+                " text primary key, " + LAMP_NAME +" text, "+ LAMP_R +" integer, "+LAMP_G +" integer, "+LAMP_B +" integer, "+LAMP_A +" integer)";
+        db.execSQL(CREATE_LAMP_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_SPEAKER);
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_PLUG_USER);
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_PLUG);
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_ACCELERATION);
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_GYRO);
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_HEARTRATE);
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_LAMP_BRIDGE);
+        db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_LAMP);
         onCreate(db);
     }
 
@@ -211,6 +248,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         return listData;
     }
 
+    //Plug DB(USER)
     public void addPlugUser(KasaInfo product){//plug DB에 새로운 user를 추가하는 부분.
 
         ContentValues value = new ContentValues();
@@ -301,6 +339,158 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         return listData;
     }
 
+    //Plug DB(Device)
+    public void addPlug(PlugItem product){//설정 시 DB 추가
+
+        ContentValues value = new ContentValues();
+        value.put(PLUG_ID,product.getdeviceId());
+        value.put(PLUG_URL,product.geturl());
+        value.put(PLUG_ALIAS,product.getalias());
+        value.put(PLUG_USER,product.getuserId());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(DATABASE_TABLE_PLUG,null,value);
+        db.close();
+    }
+
+    public boolean deletePlug(String productid)//해제 시 delete.
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT * FROM "+DATABASE_TABLE_PLUG+" where "+PLUG_ID
+                +"=\'"+productid+"\'";
+        Cursor cursor = db.rawQuery(query,null);
+
+        if(cursor.moveToFirst())
+        {
+            db.delete(DATABASE_TABLE_PLUG,PLUG_ID+"=?",new String[]{cursor.getString(0)});
+            //Toast.makeText(m_context,cursor.getString(0),Toast.LENGTH_SHORT).show();
+            cursor.close();
+            db.close();
+            return true;
+        }
+        db.close();
+        return false;
+    }
+
+    public ArrayList<PlugItem> selectPlugs(String productid)//
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_PLUG+" WHERE "
+                +PLUG_USER+"=\'"+productid+"\'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+
+        ArrayList<PlugItem> listData = new ArrayList<>();
+
+        if(cursor.moveToFirst())
+        {
+            String deviceId="";
+            String url="";
+            String alias="";
+            String userId="";
+            while(!cursor.isAfterLast())
+            {
+                for(int i=0;i<cursor.getColumnCount();i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case PLUG_ID:
+                            deviceId= cursor.getString(i);
+                            break;
+                        case PLUG_URL:
+                            url = cursor.getString(i);
+                            break;
+                        case PLUG_ALIAS:
+                            alias = cursor.getString(i);
+                            break;
+                        case PLUG_USER:
+                            userId = cursor.getString(i);
+                            break;
+                    }
+                }
+                PlugItem product = new PlugItem(deviceId,url,alias,userId);
+                listData.add(product);
+                cursor.moveToNext();
+            }
+        }
+        else
+            listData=null;
+        cursor.close();
+        db.close();
+        return listData;
+    }
+
+    public boolean existPlug(String productid)//
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_PLUG+" WHERE "
+                +PLUG_ID+"=\'"+productid+"\'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+
+        PlugItem product = new PlugItem();
+
+        if(cursor.getCount()<=0)
+        {
+            cursor.close();
+            db.close();
+            return false;
+        }
+        else{
+            cursor.close();
+            db.close();
+            return true;
+        }
+    }
+
+    public ArrayList<PlugItem> getPlugDB()
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_PLUG;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+        ArrayList<PlugItem> listData = new ArrayList<>();
+
+        if(cursor.moveToFirst())
+        {
+            String deviceId="";
+            String url="";
+            String alias="";
+            String userId="";
+
+            while(!cursor.isAfterLast())
+            {
+                for(int i=0;i<cursor.getColumnCount();i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case PLUG_ID:
+                            deviceId= cursor.getString(i);
+                            break;
+                        case PLUG_URL:
+                            url = cursor.getString(i);
+                            break;
+                        case PLUG_ALIAS:
+                            alias = cursor.getString(i);
+                            break;
+                        case PLUG_USER:
+                            userId = cursor.getString(i);
+                            break;
+                    }
+                }
+
+                PlugItem product = new PlugItem(deviceId,url,alias,userId);
+                listData.add(product);
+                cursor.moveToNext();
+            }
+        }
+        else
+        {
+            listData = null;
+        }
+        cursor.close();
+        db.close();
+        return listData;
+    }
+
+    //가속도 DB
     public void addAcceleration(Acceleration product){//가속도 값 DB에 추가.
 
         ContentValues value = new ContentValues();
@@ -525,4 +715,131 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(DATABASE_TABLE_HEARTRATE,null,null);
     }
+
+
+
+    //Lamp Bridge
+    public void addLampBridge(LampBridgeItem product){//심박수 값 DB에 추가.
+
+        ContentValues value = new ContentValues();
+        value.put(LAMP_BRIDGE_USERNAME,product.getUserName());
+        value.put(LAMP_BRIDGE_IP,product.getIp());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(DATABASE_TABLE_LAMP_BRIDGE,null,value);
+        db.close();
+    }
+    public ArrayList<LampBridgeItem> getLampBridgeDB()//심박수 DB 전체 가져오기.
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_LAMP_BRIDGE;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+        ArrayList<LampBridgeItem> listData = new ArrayList<>();
+
+        if(cursor.moveToFirst())
+        {
+            String username="";
+            String ip="";
+            while(!cursor.isAfterLast())
+            {
+                for(int i=0;i<cursor.getColumnCount();i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case LAMP_BRIDGE_USERNAME:
+                            username = cursor.getString(i);
+                            break;
+                        case LAMP_BRIDGE_IP:
+                            ip = cursor.getString(i);
+                            break;
+                    }
+                }
+
+                LampBridgeItem product = new LampBridgeItem(username,ip);
+                listData.add(product);
+                cursor.moveToNext();
+            }
+        }
+        else
+        {
+            listData = null;
+        }
+        cursor.close();
+        db.close();
+        return listData;
+    }
+
+    public LampBridgeItem selectLampBridge(String productName)//id를 통해 검색
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_LAMP_BRIDGE+" WHERE "
+                +LAMP_BRIDGE_USERNAME+"=\'"+productName+"\'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+
+        LampBridgeItem product = new LampBridgeItem();
+
+        if(cursor.moveToFirst())
+        {
+            product.setUserName(cursor.getString(0));
+            product.setIp(cursor.getString(1));
+        }
+        else
+            product=null;
+        cursor.close();
+        db.close();
+        return product;
+    }
+
+    public void deleteLampBridgeDB(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(DATABASE_TABLE_LAMP_BRIDGE,null,null);
+    }
+
+    // LAMP
+    public void addLamp(LampItem product){//심박수 값 DB에 추가.
+
+        ContentValues value = new ContentValues();
+        value.put(LAMP_ID,product.getDeviceID());
+        value.put(LAMP_NAME,product.getLampName());
+        value.put(LAMP_R,product.getLampR());
+        value.put(LAMP_G,product.getLampG());
+        value.put(LAMP_B,product.getLampB());
+        value.put(LAMP_A,product.getLampA());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.insert(DATABASE_TABLE_LAMP,null,value);
+        db.close();
+    }
+
+    public LampItem selectLamp(String productName)//id를 통해 검색
+    {
+        String query = "SELECT * FROM "+DATABASE_TABLE_LAMP+" WHERE "
+                +LAMP_ID+"=\'"+productName+"\'";
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+
+        LampItem product = new LampItem();
+
+        if(cursor.moveToFirst())
+        {
+            product.setDeviceID(cursor.getString(0));
+            product.setLampName(cursor.getString(1));
+            product.setLampR(cursor.getInt(2));
+            product.setLampG(cursor.getInt(3));
+            product.setLampB(cursor.getInt(4));
+            product.setLampA(cursor.getInt(5));
+            product.setLampControl(true);
+        }
+        else
+            product=null;
+        cursor.close();
+        db.close();
+        return product;
+    }
+
+    public void deleteLampDB(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(DATABASE_TABLE_LAMP,null,null);
+    }
+
 }
