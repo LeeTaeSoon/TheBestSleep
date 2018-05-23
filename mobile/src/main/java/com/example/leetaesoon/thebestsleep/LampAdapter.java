@@ -36,27 +36,27 @@ public class LampAdapter extends ArrayAdapter<LampItem> {
         if(lampItems != null){
             TextView t1 = (TextView)v.findViewById(R.id.lamp_device_ID);
             TextView t2 = (TextView)v.findViewById(R.id.lamp_MAC_addr);
-            final ToggleButton button = (ToggleButton)v.findViewById(R.id.btnControl);
-            if(lampItems.getLampControl()==true)
-            {
-                button.setChecked(true);
-            }
-            else{
-                button.setChecked(false);
-            }
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if(button.isChecked()==false)
-                    {
-                        lamplist.get(position).setLampControl(false);
-                    }
-                    else
-                    {
-                        lamplist.get(position).setLampControl(true);
-                    }
-                }
-            });
+//            final ToggleButton button = (ToggleButton)v.findViewById(R.id.btnControl);
+//            if(lampItems.getLampControl()==true)
+//            {
+//                button.setChecked(true);
+//            }
+//            else{
+//                button.setChecked(false);
+//            }
+//            button.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    if(button.isChecked()==false)
+//                    {
+//                        lamplist.get(position).setLampControl(false);
+//                    }
+//                    else
+//                    {
+//                        lamplist.get(position).setLampControl(true);
+//                    }
+//                }
+//            });
             /* 초기 밝기값 seek bar에 설정해야함
              * seekBar.setProgress(int value);
              * */
