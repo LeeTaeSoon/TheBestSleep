@@ -65,8 +65,6 @@ public class MainActivity extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         dbHandler = new DBHandler(this,DBHandler.DATABASE_NAME,null,1);//DBHander 생성
-
-
     }
 
     public void logShow(View view) {
