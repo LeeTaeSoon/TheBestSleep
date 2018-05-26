@@ -45,7 +45,8 @@ public class MessageListener extends WearableListenerService {
                         float y = Float.parseFloat(arr[4]);
                         float z = Float.parseFloat(arr[5]);
                         //Log.d("MessageListener", "accelerometer : " + x + " " + y + " " + z);
-                        Acceleration acc = new Acceleration(time, x, y, z);
+                        double sum = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+                        Acceleration acc = new Acceleration(time, x, y, z, sum);
                         accelerometers.add(acc);
                         break;
                 }

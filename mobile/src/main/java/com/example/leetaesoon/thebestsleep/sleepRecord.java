@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.BarLineChartBase;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -65,35 +64,33 @@ public class sleepRecord extends Activity {
 
         // TODO : DB 는 기본적으로 존재, 데이터가 없으면 안그려지도록, 12 ~ 12 시 데이터만 유지, 파일 읽는 과정이 아예 없어야함
 
-        if (dbHandler.getAccelerationDB() != null) Log.d("sleepRecord", "exist Accelerometer DB");
+        ArrayList<Acceleration> accelerations = dbHandler.getAccelerationDBMinMax();
+        if (accelerations != null) Log.d(TAG, "exist Accelerometer DB");
         else {
-            Log.v("sleepRecord","가속도 db 생성하기위해 읽어오기");
+            Log.v(TAG,"가속도 db 생성하기위해 읽어오기");
             readFile();
         }
-        accList.addAll(dbHandler.getAccelerationDB());
+        accList.addAll(accelerations);
 
-        if (dbHandler.getHeartRateDB() != null) Log.d("sleepRecord", "exist heart rate DB");
+        ArrayList<HeartRate> heartRates = dbHandler.getHeartRateDB();
+        if (heartRates != null) Log.d(TAG, "exist heart rate DB");
         else {
             Log.v("sleepRecord","심박수 db 생성하기위해 읽어오기");
             readFile();
         }
-        heartList.addAll(dbHandler.getHeartRateDB());
+        heartList.addAll(heartRates);
 
         accelerometerBase = accList.get(0).getAccelerationTime();
         heartRateBase = heartList.get(0).getHeartRatetime();
         timeBase = Math.min(accelerometerBase, heartRateBase);
 
-        if(dbHandler.getAccelerationDB() != null) {
+        if(accelerations != null) {
             for(Acceleration ac : accList) {
-                float x = (float)ac.getAccelerationX();
-                float y = (float)ac.getAccelerationY();
-                float z = (float)ac.getAccelerationZ();
-                double sum = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
-                accelerometerEntries.add(new Entry(ac.getAccelerationTime() - timeBase, (float) sum));
+                accelerometerEntries.add(new Entry(ac.getAccelerationTime() - timeBase, (float) ac.getAccelerationSCALAR()));
             }
         }
 
-        if(dbHandler.getHeartRateDB() != null) {
+        if(heartRates != null) {
             for(HeartRate hr : heartList) {
                 int rate = hr.getHeartRateRate();
                 heartRateEntries.add(new Entry(hr.getHeartRatetime() - timeBase, rate));
@@ -145,10 +142,10 @@ public class sleepRecord extends Activity {
         Description description = new Description();
         description.setText("");
 
-        lineChart.setDoubleTapToZoomEnabled(true);
+        lineChart.setDoubleTapToZoomEnabled(false);
         lineChart.setDrawGridBackground(true);
         lineChart.setDescription(description);
-        lineChart.animateY(2000, Easing.EasingOption.EaseInCubic);
+        //lineChart.animateY(2000, Easing.EasingOption.EaseInCubic);
 
         lineChart.invalidate();
     }
@@ -180,7 +177,8 @@ public class sleepRecord extends Activity {
                         x = Float.parseFloat(s[3]);
                         y = Float.parseFloat(s[4]);
                         z = Float.parseFloat(s[5]);
-                        Acceleration acc = new Acceleration(t,x,y,z);
+                        double sum = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(z, 2));
+                        Acceleration acc = new Acceleration(t,x,y,z,sum);
                         accelerations.add(acc);
                         break;
                 }

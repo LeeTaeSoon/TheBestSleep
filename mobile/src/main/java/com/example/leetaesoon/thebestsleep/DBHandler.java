@@ -40,6 +40,9 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     public static final String ACCELERATION_X = "x";
     public static final String ACCELERATION_Y = "y";
     public static final String ACCELERATION_Z = "z";
+    public static final String ACCELERATION_SCALAR = "scalar";
+    public static final String ACCELERATION_SCALAR_MIN = "scalar_min";
+    public static final String ACCELERATION_SCALAR_MAX = "scalar_max";
 
     public static final String DATABASE_TABLE_GYRO = "gyro";
     public static final String GYRO_ID = "id";
@@ -47,6 +50,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
     public static final String GYRO_X = "x";
     public static final String GYRO_Y = "y";
     public static final String GYRO_Z = "z";
+    public static final String GYRO_SCALAR = "scalar";
 
     public static final String DATABASE_TABLE_HEARTRATE = "heartRate";
     public static final String HEARTRATE_ID = "id";
@@ -96,12 +100,12 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         //가속도
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_ACCELERATION);
         String CREATE_ACCELERATION_TABLE = "create table if not exists  " + DATABASE_TABLE_ACCELERATION + "(" + ACCELERATION_ID+
-                " integer primary key autoincrement, " + ACCELERATION_TIME +" integer, "+ ACCELERATION_X +" real, "+ ACCELERATION_Y + " real, "+ ACCELERATION_Z +" real)";
+                " integer primary key autoincrement, " + ACCELERATION_TIME +" integer, "+ ACCELERATION_X +" real, "+ ACCELERATION_Y + " real, "+ ACCELERATION_Z +" real, "+ ACCELERATION_SCALAR + " real)";
         db.execSQL(CREATE_ACCELERATION_TABLE);
         //자이로
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_GYRO);
         String CREATE_GYRO_TABLE = "create table if not exists  " + DATABASE_TABLE_GYRO + "(" + GYRO_ID+
-                " integer primary key autoincrement, " + GYRO_TIME +" integer, "+ GYRO_X +" real, "+ GYRO_Y + " real, "+ GYRO_Z +" real)";
+                " integer primary key autoincrement, " + GYRO_TIME +" integer, "+ GYRO_X +" real, "+ GYRO_Y + " real, "+ GYRO_Z +" real, "+ GYRO_SCALAR +" real)";
         db.execSQL(CREATE_GYRO_TABLE);
         //심박수
         db.execSQL("DROP TABLE IF EXISTS "+DATABASE_TABLE_HEARTRATE);
@@ -498,6 +502,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         value.put(ACCELERATION_X,product.getAccelerationX());
         value.put(ACCELERATION_Y,product.getAccelerationY());
         value.put(ACCELERATION_Z,product.getAccelerationZ());
+        value.put(ACCELERATION_SCALAR, product.getAccelerationSCALAR());
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(DATABASE_TABLE_ACCELERATION,null,value);
@@ -514,6 +519,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
                 value.put(ACCELERATION_X,products.get(i).getAccelerationX());
                 value.put(ACCELERATION_Y,products.get(i).getAccelerationY());
                 value.put(ACCELERATION_Z,products.get(i).getAccelerationZ());
+                value.put(ACCELERATION_SCALAR, products.get(i).getAccelerationSCALAR());
                 db.insert(DATABASE_TABLE_ACCELERATION, null, value);
             }
             db.setTransactionSuccessful();
@@ -524,50 +530,111 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
 
     public ArrayList<Acceleration> getAccelerationDB()// 가속도 DB 전체 가져오기.
     {
-        String query = "SELECT * FROM "+DATABASE_TABLE_ACCELERATION;
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(query,null);
+        int index = 0;
+        int MAX_COUNT = 10000;
         ArrayList<Acceleration> listData = new ArrayList<>();
 
-        if(cursor.moveToFirst())
-        {
-            long time = 0;
-            double x = 0;
-            double y = 0;
-            double z = 0;
+        int readCount = 0;
+        do {
+            String query = "SELECT * FROM " + DATABASE_TABLE_ACCELERATION + " LIMIT " + MAX_COUNT + " OFFSET "  + index;
+            SQLiteDatabase db = this.getWritableDatabase();
+            Cursor cursor = db.rawQuery(query, null);
 
-            while(!cursor.isAfterLast())
-            {
-                for(int i=0;i<cursor.getColumnCount();i++)
-                {
-                    switch (cursor.getColumnName(i))
-                    {
-                        case ACCELERATION_TIME:
-                            time = cursor.getLong(i);
-                            break;
-                        case ACCELERATION_X:
-                            x = cursor.getDouble(i);
-                            break;
-                        case ACCELERATION_Y:
-                            y = cursor.getDouble(i);
-                            break;
-                        case ACCELERATION_Z:
-                            z = cursor.getDouble(i);
-                            break;
+            readCount = cursor.getCount();
+            index += readCount;
+
+            if (cursor.moveToFirst()) {
+                long time = 0;
+                double x = 0;
+                double y = 0;
+                double z = 0;
+                double scalar = 0;
+
+                while (!cursor.isAfterLast()) {
+                    for (int i = 0; i < cursor.getColumnCount(); i++) {
+                        switch (cursor.getColumnName(i)) {
+                            case ACCELERATION_TIME:
+                                time = cursor.getLong(i);
+                                break;
+                            case ACCELERATION_X:
+                                x = cursor.getDouble(i);
+                                break;
+                            case ACCELERATION_Y:
+                                y = cursor.getDouble(i);
+                                break;
+                            case ACCELERATION_Z:
+                                z = cursor.getDouble(i);
+                                break;
+                            case ACCELERATION_SCALAR:
+                                scalar = cursor.getDouble(i);
+                                break;
+                        }
                     }
-                }
 
-                Acceleration product = new Acceleration(time,x,y,z);
-                listData.add(product);
-                cursor.moveToNext();
+                    Acceleration product = new Acceleration(time, x, y, z, scalar);
+                    listData.add(product);
+                    cursor.moveToNext();
+                }
+            } else {
+                listData = null;
             }
-        }
-        else
-        {
-            listData = null;
-        }
-        cursor.close();
-        db.close();
+            cursor.close();
+            db.close();
+        } while (readCount == MAX_COUNT);
+
+        return listData;
+    }
+
+    public ArrayList<Acceleration> getAccelerationDBMinMax()
+    {
+        int index = 0;
+        int MAX_COUNT = 10000;
+        ArrayList<Acceleration> listData = new ArrayList<>();
+
+        int readCount = 0;
+        do {
+            String query = "SELECT " + ACCELERATION_TIME + ",MIN(" + ACCELERATION_SCALAR + ") as " + ACCELERATION_SCALAR_MIN + ", MAX(" +
+                    ACCELERATION_SCALAR + ") as " + ACCELERATION_SCALAR_MAX + " FROM " + DATABASE_TABLE_ACCELERATION + " GROUP BY " + ACCELERATION_TIME +
+                    " LIMIT " + MAX_COUNT + " OFFSET " + index;
+            SQLiteDatabase db = this.getWritableDatabase();
+            Cursor cursor = db.rawQuery(query, null);
+
+            readCount = cursor.getCount();
+            index += readCount;
+
+            if (cursor.moveToFirst()) {
+                long time = 0;
+                double scalarMin = 0;
+                double scalarMax = 0;
+
+                while (!cursor.isAfterLast()) {
+                    for (int i = 0; i < cursor.getColumnCount(); i++) {
+                        switch (cursor.getColumnName(i)) {
+                            case ACCELERATION_TIME:
+                                time = cursor.getLong(i);
+                                break;
+                            case ACCELERATION_SCALAR_MIN:
+                                scalarMin = cursor.getDouble(i);
+                                break;
+                            case ACCELERATION_SCALAR_MAX:
+                                scalarMax = cursor.getDouble(i);
+                                break;
+                        }
+                    }
+
+                    Acceleration product = new Acceleration(time, 0, 0, 0, Math.abs(1-scalarMin));
+                    listData.add(product);
+                    product = new Acceleration(time, 0, 0, 0, Math.abs(1-scalarMax));
+                    listData.add(product);
+                    cursor.moveToNext();
+                }
+            } else {
+                listData = null;
+            }
+            cursor.close();
+            db.close();
+        } while (readCount == MAX_COUNT);
+
         return listData;
     }
 
@@ -585,6 +652,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         value.put(GYRO_X,product.getGyroX());
         value.put(GYRO_Y,product.getGyroY());
         value.put(GYRO_Z,product.getGyroZ());
+        value.put(GYRO_SCALAR,product.getGyroSCALAR());
 
         SQLiteDatabase db = this.getWritableDatabase();
         db.insert(DATABASE_TABLE_GYRO,null,value);
@@ -604,6 +672,7 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
             double x = 0;
             double y = 0;
             double z = 0;
+            double scalar = 0;
 
             while(!cursor.isAfterLast())
             {
@@ -623,10 +692,13 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
                         case GYRO_Z:
                             z = cursor.getDouble(i);
                             break;
+                        case GYRO_SCALAR:
+                            scalar = cursor.getDouble(i);
+                            break;
                     }
                 }
 
-                Gyro product = new Gyro(time,x,y,z);
+                Gyro product = new Gyro(time,x,y,z,scalar);
                 listData.add(product);
                 cursor.moveToNext();
             }
