@@ -2,6 +2,8 @@ package com.example.leetaesoon.thebestsleep;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.wear.widget.WearableLinearLayoutManager;
+import android.support.wear.widget.WearableRecyclerView;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
 import android.view.View;
@@ -11,6 +13,7 @@ public class MainActivity extends WearableActivity {
 
     private static final String TAG = "MainActivity";
 
+    WearableRecyclerView wearableRecyclerView;
     InnerStorageHandler innerStorageHandler;
     ImageButton mImageButton;
     int using;
