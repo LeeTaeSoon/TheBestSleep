@@ -1,5 +1,6 @@
 package com.example.leetaesoon.thebestsleep;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
@@ -7,9 +8,12 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -20,8 +24,6 @@ import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SeekBar;
-import android.widget.Switch;
-import android.widget.Toast;
 
 import com.philips.lighting.hue.listener.PHLightListener;
 import com.philips.lighting.hue.sdk.PHAccessPoint;
@@ -56,15 +58,20 @@ import java.util.Set;
 import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends Activity{
-
     Intent intent;
     public static DBHandler dbHandler;
     PHHueSDK phHueSDK;
+    final int externalRequest = 1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         dbHandler = new DBHandler(this,DBHandler.DATABASE_NAME,null,1);//DBHander 생성
+
+        if(checkAppPermission(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}));
+        else{
+            askPermission(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, externalRequest);
+        }
     }
 
     public void logShow(View view) {
@@ -124,8 +131,6 @@ public class MainActivity extends Activity{
 
                                 jsonObject1.accumulate("requestData", ""+content3);
 
-
-
                                 JSONObject jsonObject2 = new JSONObject();
                                 jsonObject2.accumulate("method", "passthrough");
                                 jsonObject2.accumulate("params", jsonObject1);
@@ -135,7 +140,6 @@ public class MainActivity extends Activity{
                                 connection.setRequestProperty("Content-type", "application/json");
                                 connection.setDoOutput(true);
                                 connection.setDoInput(true);
-
 
                                 OutputStream outputStream = connection.getOutputStream();
                                 outputStream.write(jsonObject2.toString().getBytes());
@@ -158,7 +162,6 @@ public class MainActivity extends Activity{
                                     Log.d("off",responseJSON1.getString("msg"));
                                 }
 
-
                             } catch (MalformedURLException e) {
                                 e.printStackTrace();
                             } catch (IOException e) {
@@ -166,7 +169,6 @@ public class MainActivity extends Activity{
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-
 
                         }
                     }).start();
@@ -219,8 +221,6 @@ public class MainActivity extends Activity{
 //            }
         }
 
-
-
         super.onBackPressed();
     }
 
@@ -242,7 +242,6 @@ public class MainActivity extends Activity{
             Log.d("Connect","DisConnectSV");
         }
     };
-
 
     //listener
     private PHSDKListener SDKlistener = new PHSDKListener() {
@@ -337,6 +336,30 @@ public class MainActivity extends Activity{
         super.onDestroy();
         if (SDKlistener !=null && phHueSDK != null) {
             phHueSDK.getNotificationManager().unregisterSDKListener(SDKlistener);
+        }
+    }
+
+    boolean checkAppPermission(String[] requestPermission){
+        boolean[] requestResult= new boolean[requestPermission.length];
+        for(int i=0; i< requestResult.length; i++){
+            requestResult[i] = (ContextCompat.checkSelfPermission(this,
+                    requestPermission[i]) == PackageManager.PERMISSION_GRANTED);
+            if(!requestResult[i]){
+                return false;
+            }
+        }return true;
+    }
+
+    void askPermission(String[] requestPermission, int REQ_PERMISSION) {
+        ActivityCompat.requestPermissions(this,requestPermission,REQ_PERMISSION);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (checkAppPermission(permissions)) {} //퍼미션 동의했을시
+        else { // 거절시 앱 종료
+            finish();
         }
     }
 }
