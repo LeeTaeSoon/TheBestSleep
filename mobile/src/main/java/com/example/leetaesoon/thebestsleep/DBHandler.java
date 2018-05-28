@@ -622,9 +622,9 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
                         }
                     }
 
-                    Acceleration product = new Acceleration(time, 0, 0, 0, Math.abs(1-scalarMin));
+                    Acceleration product = new Acceleration(time, 0, 0, 0, scalarMin);
                     listData.add(product);
-                    product = new Acceleration(time, 0, 0, 0, Math.abs(1-scalarMax));
+                    product = new Acceleration(time, 0, 0, 0, scalarMax);
                     listData.add(product);
                     cursor.moveToNext();
                 }
@@ -636,6 +636,47 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         } while (readCount == MAX_COUNT);
 
         return listData;
+    }
+
+    public double getAccelerationDBAvg(long start, long end)
+    {
+        String query = "SELECT " + ACCELERATION_SCALAR + " FROM " + DATABASE_TABLE_ACCELERATION +
+                " WHERE " + ACCELERATION_TIME + " BETWEEN " + start + " and " + end;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+
+        double scalar = 0;
+        double pre = 0;
+
+        if(cursor.moveToFirst())
+        {
+            while(!cursor.isAfterLast())
+            {
+                for(int i = 0; i < cursor.getColumnCount(); i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case ACCELERATION_SCALAR:
+                            if (pre == 0) pre = cursor.getDouble(i);
+                            else {
+                                double s = cursor.getDouble(i);
+                                scalar += Math.abs(s - pre);
+                                pre = s;
+                            }
+                            break;
+                    }
+                }
+                cursor.moveToNext();
+            }
+        }
+
+        cursor.close();
+        db.close();
+
+        double avg = 0.0f;
+        avg = scalar / ((double) cursor.getCount() - 1);
+
+        return avg;
     }
 
     //Acceleration Table 삭제
@@ -783,6 +824,38 @@ public class DBHandler extends SQLiteOpenHelper implements Serializable {
         db.close();
         return listData;
     }
+
+    public int getHeartRateDBAvg(long start, long end)
+    {
+        String query = "SELECT AVG(" + HEARTRATE_RATE + ") as " + HEARTRATE_RATE + " FROM " + DATABASE_TABLE_HEARTRATE +
+                " WHERE " + HEARTRATE_TIME + " BETWEEN " + start + " and " + end;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+        double rate = 0;
+
+        if(cursor.moveToFirst())
+        {
+            while(!cursor.isAfterLast())
+            {
+                for(int i = 0; i < cursor.getColumnCount(); i++)
+                {
+                    switch (cursor.getColumnName(i))
+                    {
+                        case HEARTRATE_RATE:
+                            rate = cursor.getDouble(i);
+                            break;
+                    }
+                }
+                cursor.moveToNext();
+            }
+        }
+
+        cursor.close();
+        db.close();
+
+        return (int) rate;
+    }
+
     public void deleteHeartRateDB(){//Gyro Table 삭제
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(DATABASE_TABLE_HEARTRATE,null,null);

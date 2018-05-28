@@ -35,7 +35,7 @@ public class ExternalStorageHandler {
         //Log.d(TAG, "External Media: readable = " + mExternalStorageAvailable + " writable = " + mExternalStorageWriteable);
     }
 
-    public void writeFile(String data) {
+    public void writeFile(String filename, String data) {
 
         // Find the root of the external storage.
         // See http://developer.android.com/guide/topics/data/data-  storage.html#filesExternal
@@ -47,7 +47,7 @@ public class ExternalStorageHandler {
 
         File dir = new File(root.getAbsolutePath() + "/TheBestSleep");
         dir.mkdirs();
-        File file = new File(dir, "sensor.txt");
+        File file = new File(dir, filename);
 
         try {
             FileOutputStream f = new FileOutputStream(file, true);
