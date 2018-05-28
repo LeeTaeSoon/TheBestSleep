@@ -69,6 +69,7 @@ public class sleepRecord extends Activity {
         else {
             Log.v(TAG,"가속도 db 생성하기위해 읽어오기");
             readFile();
+            accelerations = dbHandler.getAccelerationDBMinMax();
         }
         accList.addAll(accelerations);
 
@@ -84,8 +85,18 @@ public class sleepRecord extends Activity {
         heartRateBase = heartList.get(0).getHeartRatetime();
         timeBase = Math.min(accelerometerBase, heartRateBase);
 
+        long pre = 0;
         if(accelerations != null) {
             for(Acceleration ac : accList) {
+                long time = ac.getAccelerationTime();
+                long diff = (time - pre) / 60000L;
+                //Log.d(TAG, "pre : " + pre + ", time : " + time);
+                //Log.d(TAG, "diff : " + diff + " min");
+                if (diff > 30) pre = time;           // first time
+                else if (diff > 5) {
+                    if (isSleep(time)) turnOffDevices(time);
+                    pre = time;
+                }
                 accelerometerEntries.add(new Entry(ac.getAccelerationTime() - timeBase, (float) ac.getAccelerationSCALAR()));
             }
         }
@@ -189,6 +200,34 @@ public class sleepRecord extends Activity {
         dbHandler.addAllHeartRate(heartRates);
         dbHandler.addAllAcceleration(accelerations);
         scan.close();
+    }
+
+    private boolean isSleep(long time) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+        Log.d(TAG, "called isSleep");
+        long windowStart = time - 1800000;      // 30 min before
+        Log.d(TAG, "start time : " + simpleDateFormat.format(windowStart) + ", end : " + simpleDateFormat.format(time));
+        if (getAvgAcc(windowStart, time) < 0.002 && getAvgHeartRate(windowStart, time) < 62) return true;
+        else return false;
+    }
+
+    private double getAvgAcc(long start, long end) {
+        double d = dbHandler.getAccelerationDBAvg(start, end);
+        Log.d(TAG, "avg acc : " + d);
+        return d;
+    }
+
+    private int getAvgHeartRate(long start, long end) {
+        int r = dbHandler.getHeartRateDBAvg(start, end);
+        Log.d(TAG, "avg heart : " + r);
+        return r;
+    }
+
+    private void turnOffDevices(long time) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+        Log.d(TAG, "turn off at " + simpleDateFormat.format(time));
+        ExternalStorageHandler externalStorageHandler = new ExternalStorageHandler();
+        externalStorageHandler.writeFile("sleep time.txt", simpleDateFormat.format(time) + "\n");
     }
 
     public void refresh(View view) {
