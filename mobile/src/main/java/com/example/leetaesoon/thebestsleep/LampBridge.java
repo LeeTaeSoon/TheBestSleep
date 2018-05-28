@@ -38,7 +38,7 @@ public class LampBridge extends Activity {
         phHueSDK = PHHueSDK.create();
         phHueSDK.getNotificationManager().registerSDKListener(listener);
 
-        dbHandler = MainActivity.dbHandler;
+        dbHandler = new DBHandler(this,DBHandler.DATABASE_NAME,null,1);
         //Bridge 를 보여줄 리스트, 아답터.
         adapter = new AccessPointListAdapter(getApplicationContext(), phHueSDK.getAccessPointsFound());
         accessPointList = (ListView) findViewById(R.id.bridge_list);

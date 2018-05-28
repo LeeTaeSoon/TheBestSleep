@@ -47,7 +47,7 @@ public class plugSignIn extends Activity{
         setContentView(R.layout.activity_plug_sign_in);
         mEmail = (EditText) findViewById(R.id.email);
         mPassword = (EditText) findViewById(R.id.password);
-        dbHandler = MainActivity.dbHandler;
+        dbHandler = new DBHandler(this,DBHandler.DATABASE_NAME,null,1);
         //만약 DB에 id, token정보가 있으면 login 과정 없이 device목록을 찾아 device DB에 없는 장치가 있으면 DB에 추가.
         if(dbHandler.getPlugUserDB() != null)
         {
@@ -260,67 +260,6 @@ public class plugSignIn extends Activity{
 
             return -1;
         }
-
-//        private void getDeviceList() {//url, id, alias값을 받아오는 곳. ,token 필요.
-//            try {
-//                URL url = new URL("https://wap.tplinkcloud.com?token="+token);
-//                JSONObject jsonObject = new JSONObject();
-//                jsonObject.accumulate("method", "getDeviceList");
-//
-//                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-//                connection.setRequestMethod("POST");//POST message
-//                connection.setRequestProperty("Content-type", "application/json");
-//                connection.setDoOutput(true);
-//                connection.setDoInput(true);
-//
-//
-//                OutputStream outputStream = connection.getOutputStream();
-//                outputStream.write(jsonObject.toString().getBytes());
-//                outputStream.flush();
-//
-//                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)//값을 잘 받았을 때.
-//                {
-//                    InputStream inputStream = connection.getInputStream();
-//                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//                    byte[] byteBuffer = new byte[1024];
-//                    byte[] byteData = null;
-//                    int nLength = 0;
-//                    while ((nLength = inputStream.read(byteBuffer, 0, byteBuffer.length)) != -1) {
-//                        byteArrayOutputStream.write(byteBuffer, 0, nLength);
-//                    }
-//                    byteData = byteArrayOutputStream.toByteArray();
-//                    String response = new String(byteData);
-//
-//                    JSONObject responseJSON1 = new JSONObject(response);
-//
-//                    if(responseJSON1.get("error_code").equals(0) )//메세지를 잘 받았을 때.
-//                    {
-//                        JSONObject responseJSON2 = (JSONObject)responseJSON1.get("result");
-//                        JSONArray jsonArray = (JSONArray) responseJSON2.get("deviceList");
-//                        for(int i=0;i<jsonArray.length();i++)// device가 여러개 있을 때 모두 불러오기 위함.
-//                        {
-//                            JSONObject responseJSON3 = jsonArray.getJSONObject(i);
-//                            SmartPlug.plug p = new SmartPlug.plug(responseJSON3.getString("appServerUrl"),responseJSON3.getString("deviceId"),responseJSON3.getString("alias"),responseJSON3.getString("status"));
-//                            plugList.add(p);
-//                            Log.d("uuid","status : "+ responseJSON3.toString());
-//                        }
-//
-//                        Log.d("uuid","url : "+plugList.get(0).geturl()+ "\nid : "+plugList.get(0).getid()+"\nalias : "+plugList.get(0).getalias()+"\nstatus : "+plugList.get(0).getstatus());
-//                    }
-//                }
-//
-//
-//            } catch (MalformedURLException e) {
-//                e.printStackTrace();
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            } catch (ProtocolException e) {
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//
-//        }
 
     }
 

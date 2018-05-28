@@ -19,7 +19,7 @@ public class PlugAdapter extends ArrayAdapter<PlugItem> {
     public PlugAdapter(@NonNull Context context, int resource, @NonNull List<PlugItem> objects) {
         super(context, resource, objects);
         deviceList = objects;
-        dbHandler = MainActivity.dbHandler;
+        dbHandler = new DBHandler(context,DBHandler.DATABASE_NAME,null,1);
     }
 
     @NonNull

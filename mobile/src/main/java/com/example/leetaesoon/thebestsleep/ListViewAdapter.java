@@ -35,7 +35,7 @@ public class ListViewAdapter extends ArrayAdapter<PairedDevice> {
         super(context, resource, objects);
         m_context = context;
         m_listData = objects;
-        dbHandler = MainActivity.dbHandler;
+        dbHandler = new DBHandler(m_context,DBHandler.DATABASE_NAME,null,1);
     }
 
     @NonNull

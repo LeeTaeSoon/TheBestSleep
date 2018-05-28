@@ -58,7 +58,7 @@ import javax.net.ssl.HttpsURLConnection;
 public class MainActivity extends Activity{
 
     Intent intent;
-    public static DBHandler dbHandler;
+    public DBHandler dbHandler;
     PHHueSDK phHueSDK;
     @Override
     protected void onCreate(Bundle savedInstanceState) {

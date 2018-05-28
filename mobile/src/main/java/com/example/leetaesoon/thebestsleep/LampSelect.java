@@ -36,7 +36,7 @@ public class LampSelect extends Activity {
         init();
     }
     public void init(){
-        dbHandler = MainActivity.dbHandler;
+        dbHandler = new DBHandler(this,DBHandler.DATABASE_NAME,null,1);
         phHueSDK = PHHueSDK.create();
         listView = (ListView)findViewById(R.id.listview);
 

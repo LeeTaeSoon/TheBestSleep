@@ -45,7 +45,7 @@ public class PlugList extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plug_list);
-        dbHandler = MainActivity.dbHandler;
+        dbHandler = new DBHandler(this,DBHandler.DATABASE_NAME,null,1);
         init();
     }
     public void init(){

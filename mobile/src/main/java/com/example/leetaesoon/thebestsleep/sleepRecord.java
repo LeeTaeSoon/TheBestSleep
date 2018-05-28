@@ -44,7 +44,7 @@ public class sleepRecord extends Activity {
         setContentView(R.layout.activity_sleep_record);
         lineChart = (LineChart)findViewById(R.id.chart1);
 
-        dbHandler = MainActivity.dbHandler;
+        dbHandler = new DBHandler(this,DBHandler.DATABASE_NAME,null,1);
         heartRateEntries = new ArrayList<>();
         accelerometerEntries = new ArrayList<>();
 

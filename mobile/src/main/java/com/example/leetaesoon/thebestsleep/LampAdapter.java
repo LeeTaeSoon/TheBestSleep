@@ -15,7 +15,6 @@ import android.widget.ToggleButton;
 
 import java.util.List;
 
-import static com.example.leetaesoon.thebestsleep.MainActivity.dbHandler;
 
 public class LampAdapter extends ArrayAdapter<LampItem> {
     List<LampItem> lamplist;

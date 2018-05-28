@@ -45,7 +45,7 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
         setContentView(R.layout.activity_bluetooth_speaker);
         Intent intentMain = getIntent();
 //        dbHandler = (DBHandler) intentMain.getSerializableExtra("DB");
-        dbHandler = MainActivity.dbHandler;
+        dbHandler = new DBHandler(this,DBHandler.DATABASE_NAME,null,1);
         Init();
     }
 
