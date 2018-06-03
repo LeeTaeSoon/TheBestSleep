@@ -100,7 +100,7 @@ public class MainActivity extends Activity{
         //현재 블루투스 연결된 장치가 DB에 있는지 확인 후 종료(블루투스 스피커)
         if(BluetoothAdapter.getDefaultAdapter().getProfileConnectionState(BluetoothProfile.A2DP) == BluetoothProfile.STATE_CONNECTED)//블루투스에 연결되어있는 상태이고
         {
-            BluetoothAdapter.getDefaultAdapter().getProfileProxy(this, serviceListener, BluetoothProfile.A2DP);
+            BluetoothAdapter.getDefaultAdapter().getProfileProxy(getApplicationContext(), serviceListener, BluetoothProfile.A2DP);
         }
 
         //현재 id 값에 해당하는 DB에 저장된 모든 장치에 off 메세지 전송(스마트 플러그)
@@ -157,9 +157,6 @@ public class MainActivity extends Activity{
                                     }
                                     byteData = byteArrayOutputStream.toByteArray();
                                     String response = new String(byteData);
-
-                                    JSONObject responseJSON1 = new JSONObject(response);
-                                    Log.d("off",responseJSON1.getString("msg"));
                                 }
 
                             } catch (MalformedURLException e) {
@@ -195,30 +192,6 @@ public class MainActivity extends Activity{
                 phHueSDK.disconnect(connectedBridge);
             }
             phHueSDK.connect(lastAccessPoint);//디비에 저장된 브릿지로 연결
-
-//            //조명 제어부분
-//            PHBridge bridge = phHueSDK.getSelectedBridge();//브릿지 정보가져옴
-//
-//            List<PHLight> allLights = bridge.getResourceCache().getAllLights();//브릿지에 연결된 조명들.
-//            for (PHLight light : allLights) {
-//                LampItem lampItem = dbHandler.selectLamp(light.getUniqueId());
-//                if(lampItem != null)// 조명이 등록되어있다.
-//                {
-//                    PHLightState lightState = new PHLightState();
-//                    if(lampItem.getLampA() ==0)//램프 off.
-//                    {
-//                        lightState.setOn(false);
-//                    }
-//                    else{// 색 조절.
-//                        float xy[] = PHUtilities.calculateXYFromRGB(lampItem.getLampR(),lampItem.getLampG(),lampItem.getLampB(),light.getModelNumber());
-//                        lightState.setX(xy[0]);
-//                        lightState.setY(xy[1]);
-//                        lightState.setBrightness(lampItem.getLampA());
-//                    }
-//
-//                    bridge.updateLightState(light, lightState, lightListener);
-//                }
-//            }
         }
 
         super.onBackPressed();
@@ -252,11 +225,6 @@ public class MainActivity extends Activity{
 
         @Override
         public void onBridgeConnected(PHBridge bridge, String username) {
-//            phHueSDK.setSelectedBridge(bridge);
-//            phHueSDK.enableHeartbeat(bridge, PHHueSDK.HB_INTERVAL);
-//            phHueSDK.getLastHeartbeat().put(bridge.getResourceCache().getBridgeConfiguration() .getIpAddress(), System.currentTimeMillis());
-//            phHueSDK.getDeviceName();
-
             //조명 제어부분
 
             List<PHLight> allLights = bridge.getResourceCache().getAllLights();//브릿지에 연결된 조명들.
@@ -275,7 +243,7 @@ public class MainActivity extends Activity{
                         lightState.setY(xy[1]);
                         lightState.setBrightness(lampItem.getLampA());
                     }
-
+                    Log.d("redlight","Main");
                     bridge.updateLightState(light, lightState, lightListener);
                 }
             }
@@ -334,6 +302,7 @@ public class MainActivity extends Activity{
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.d("bridge1","destroy");
         if (SDKlistener !=null && phHueSDK != null) {
             phHueSDK.getNotificationManager().unregisterSDKListener(SDKlistener);
         }

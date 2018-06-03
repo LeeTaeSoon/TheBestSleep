@@ -151,7 +151,7 @@ public class BluetoothSpeaker extends  Activity implements Serializable {
         else
         {
             try {
-                m_BtAdapter.getProfileProxy(this, serviceListener, BluetoothProfile.A2DP);
+                m_BtAdapter.getProfileProxy(getApplicationContext(), serviceListener, BluetoothProfile.A2DP);
             }
             catch(Exception e)
             {
